@@ -55,5 +55,16 @@
         }
 
         #endregion Constructors
+
+        /// <summary>
+        /// Checks if the given point is inside the obstacle.
+        /// </summary>
+        /// <param name="p">Point to check.</param>
+        /// <returns>True if the obstacle contains the given point, otherwise false.</returns>
+        internal bool Contains(Point p)
+        {
+            return Position.X <= p.X && Position.X + Size.X <= p.X &&
+                Position.Y <= p.Y && Position.Y + Size.Y <= p.Y;
+        }
     }
 }

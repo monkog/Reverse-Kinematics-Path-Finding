@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModel="clr-namespace:ReverseKinematicsPathFinding.ViewModel"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:helpers="clr-namespace:ReverseKinematicsPathFinding.Helpers"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525" WindowState="Maximized">
     <Window.DataContext>
@@ -26,11 +27,13 @@
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="Margin" Value="25"/>
         </Style>
+        
+        <helpers:BitmapToBitmapImageConverter x:Key="BitmapToBitmapImageConverter"/>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="400"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -40,8 +43,8 @@
 
             <Button Background="Transparent" Content="Calculate" Command="{Binding CalculatePathCommand}" Width="100" Height="50"/>
             <Separator/>
-            
-            <Canvas/>
+
+            <Image Width="360" Height="360" Source="{Binding ConfigurationSpaceImage, Converter={StaticResource ResourceKey=BitmapToBitmapImageConverter}}"/>
         </StackPanel>
 
         <Canvas Grid.Column="1" Background="Black" Name="DemoCanvas">
@@ -60,6 +63,8 @@
                   X2="{Binding Robot.FirstPosition.X}" Y2="{Binding Robot.FirstPosition.Y}"/>
             <Line X1="{Binding Robot.FirstPosition.X}" Y1="{Binding Robot.FirstPosition.Y}" 
                   X2="{Binding Robot.SecondPosition.X}" Y2="{Binding Robot.SecondPosition.Y}"/>
+            <Ellipse Canvas.Left="{Binding Robot.DestinationPosition.X}" Canvas.Top="{Binding Robot.DestinationPosition.Y}"
+                     Width="10" Height="10" Fill="HotPink"/>
             <ItemsControl ItemsSource="{Binding Obstacles}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

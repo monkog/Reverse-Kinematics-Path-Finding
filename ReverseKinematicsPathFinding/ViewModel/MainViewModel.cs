@@ -1,10 +1,11 @@
 ﻿using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Linq;
 using ReverseKinematicsPathFinding.Model;
+using Color = System.Drawing.Color;
 
 namespace ReverseKinematicsPathFinding.ViewModel
 {
-    using System.Collections.Generic;
     using System.Windows.Input;
     using System.Windows;
 
@@ -24,40 +25,11 @@ namespace ReverseKinematicsPathFinding.ViewModel
         private Point _lastMousePosition;
         private Point _mouseDownPosition;
 
-        private double _viewportWidth;
-        private double _viewportHeight;
+        private Bitmap _configurationSpaceImage;
 
         #endregion Private Members
 
         #region Public Members
-
-        /// <summary>
-        /// Gets or sets the width of the viewport.
-        /// </summary>
-        public double ViewportWidth
-        {
-            get { return _viewportWidth; }
-            set
-            {
-                if (_viewportWidth == value) return;
-                _viewportWidth = value;
-                OnPropertyChanged("ViewportWidth");
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the height of the viewport.
-        /// </summary>
-        public double ViewportHeight
-        {
-            get { return _viewportHeight; }
-            set
-            {
-                if (_viewportHeight == value) return;
-                _viewportHeight = value;
-                OnPropertyChanged("ViewportHeight");
-            }
-        }
 
         /// <summary>
         /// Collection of the obstacles.
@@ -78,6 +50,20 @@ namespace ReverseKinematicsPathFinding.ViewModel
         /// </summary>
         public Robot Robot { get; private set; }
 
+        /// <summary>
+        /// Gets the configuration space image.
+        /// </summary>
+        public Bitmap ConfigurationSpaceImage
+        {
+            get { return _configurationSpaceImage; }
+            private set
+            {
+                if (_configurationSpaceImage == value) return;
+                _configurationSpaceImage = value;
+                OnPropertyChanged("ConfigurationSpaceImage");
+            }
+        }
+
         public ICommand CalculatePathCommand { get { return _calculatePathCommand ?? (_calculatePathCommand = new DelegateCommand(CalculatePath)); } }
 
         public ICommand MouseDownCommand { get { return _mouseDownCommand ?? (_mouseDownCommand = new DelegateCommand(MouseDown)); } }
@@ -94,15 +80,40 @@ namespace ReverseKinematicsPathFinding.ViewModel
         {
             Obstacles = new ObservableCollection<Obstacle>();
             Robot = new Robot();
+
+            ConfigurationSpaceImage = new Bitmap(360, 360);
         }
 
         #endregion Constructors
 
-        #region Constructors
+        #region Public Methods
 
         private void CalculatePath(object obj)
         {
+            CalculateConfiguration();
 
+        }
+
+        private void CalculateConfiguration()
+        {
+            for (int i = 0; i < 360; i++)
+            {
+                for (int j = 0; j < 360; j++)
+                {
+                    bool intersectsObstacle = false;
+                    foreach (var obstacle in Obstacles)
+                    {
+                        if (Robot.IntersectsRectangle(Robot.ZeroPosition, Robot.CalculateFirstPosition(i, j), obstacle))
+                            intersectsObstacle = true;
+                        if (Robot.IntersectsRectangle(Robot.CalculateFirstPosition(i, j), Robot.CalculateSecondPosition(i, j), obstacle))
+                            intersectsObstacle = true;
+                    }
+
+                    if (intersectsObstacle) ConfigurationSpaceImage.SetPixel(i, j, Color.Red);
+                    else ConfigurationSpaceImage.SetPixel(i, j, Color.Aqua);
+                }
+            }
+            OnPropertyChanged("ConfigurationSpaceImage");
         }
 
         private void MouseDown(object obj)
@@ -116,6 +127,8 @@ namespace ReverseKinematicsPathFinding.ViewModel
                     Robot.FirstPosition = _mouseDownPosition;
                 else if (double.IsNaN(Robot.L2))
                     Robot.SecondPosition = _mouseDownPosition;
+                else 
+                    Robot.DestinationPosition = _mouseDownPosition;
             }
             else if (Mouse.LeftButton == MouseButtonState.Pressed)
             {
@@ -145,6 +158,6 @@ namespace ReverseKinematicsPathFinding.ViewModel
             _isMouseDown = false;
         }
 
-        #endregion Constructors
+        #endregion Public Methods
     }
 }

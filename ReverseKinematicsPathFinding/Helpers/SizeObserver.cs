@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace ReverseKinematicsPathFinding
+namespace ReverseKinematicsPathFinding.Helpers
 {
     /// <summary>
     /// Enables binding to the readonly properties
