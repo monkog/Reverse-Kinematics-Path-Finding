@@ -134,7 +134,25 @@ namespace ReverseKinematicsPathFinding.Model
                 if (_l2 == value) return;
                 _l2 = value;
                 OnPropertyChanged("L2");
+                OnPropertyChanged("ArmsMaxRange");
+                OnPropertyChanged("ArmsMinRange");
             }
+        }
+
+        /// <summary>
+        /// Gets the maximum range of arms.
+        /// </summary>
+        public double ArmsMaxRange
+        {
+            get { return (L1 + L2) * 2; }
+        }
+
+        /// <summary>
+        /// Gets the minimum range of arms.
+        /// </summary>
+        public double ArmsMinRange
+        {
+            get { return 2 * Math.Abs(L2 - L1); }
         }
 
         #endregion Public Members
@@ -144,6 +162,7 @@ namespace ReverseKinematicsPathFinding.Model
         public Robot(double width, double height)
         {
             FourthPosition = ThirdPosition = SecondPosition = FirstPosition = ZeroPosition = new Point(width / 2.0, height / 2.0);
+            DestinationPosition = ZeroPosition;
             L1 = L2 = double.NaN;
         }
 
@@ -196,6 +215,13 @@ namespace ReverseKinematicsPathFinding.Model
 
         public bool IntersectsRectangle(Point p1, Point p2, Obstacle r)
         {
+            var a = LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y));
+            var b = LineIntersectsLine(p1, p2, new Point(r.Position.X + r.Size.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y));
+            var c = LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y + r.Size.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y));
+            var d = LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y), new Point(r.Position.X, r.Position.Y + r.Size.Y));
+            var e = r.Contains(p1);
+            var f = r.Contains(p2);
+
             return LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y)) ||
                    LineIntersectsLine(p1, p2, new Point(r.Position.X + r.Size.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y)) ||
                    LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y + r.Size.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y)) ||

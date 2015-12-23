@@ -33,7 +33,8 @@
         </Style>
         
         <helpers:BitmapToBitmapImageConverter x:Key="BitmapToBitmapImageConverter"/>
-        <helpers:BoolToColourConverter x:Key="BoolToColourConverter" />
+        <helpers:BoolToColourConverter x:Key="BoolToColourConverter"/>
+        <helpers:MoveToCenterConverter x:Key="MoveToCenterConverter"/>
     </Window.Resources>
 
     <Grid>
@@ -64,6 +65,12 @@
                     <i:InvokeCommandAction Command="{Binding MouseUpCommand}" CommandParameter="{Binding ElementName=DemoCanvas}"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
+            <Ellipse Width="{Binding Robot.ArmsMaxRange}" Height="{Binding Robot.ArmsMaxRange}" Fill="DeepPink" Opacity="0.2"
+                     Canvas.Left="{Binding Robot.ArmsMaxRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=600}"
+                     Canvas.Top="{Binding Robot.ArmsMaxRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=418}"/>
+            <Ellipse Width="{Binding Robot.ArmsMinRange}" Height="{Binding Robot.ArmsMinRange}" Fill="Black"
+                     Canvas.Left="{Binding Robot.ArmsMinRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=600}"
+                     Canvas.Top="{Binding Robot.ArmsMinRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=418}"/>
             <ItemsControl ItemsSource="{Binding Obstacles}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

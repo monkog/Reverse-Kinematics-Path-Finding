@@ -37,6 +37,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
         private int[,] _floodConfigurationSpace;
 
         private DispatcherTimer _timer;
+        private int _ticks;
 
         private Obstacle _currentObstacle;
 
@@ -113,7 +114,9 @@ namespace ReverseKinematicsPathFinding.ViewModel
             ConfigurationSpaceImage = new Bitmap(360, 360);
             ReachableSpaceImage = new Bitmap(360, 360);
             _floodConfigurationSpace = new int[360, 360];
-            _timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 100) };
+            _timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 1, 500) };
+            _timer.Tick += _timer_Tick;
+            _ticks = 0;
         }
 
         #endregion Constructors
@@ -124,6 +127,11 @@ namespace ReverseKinematicsPathFinding.ViewModel
         {
             CalculateConfiguration();
             //CalculateReachableConfiguration();
+        }
+
+        void _timer_Tick(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void CalculateConfiguration()
@@ -191,32 +199,6 @@ namespace ReverseKinematicsPathFinding.ViewModel
             }
         }
 
-        private void MouseDown(object obj)
-        {
-            _mouseDownPosition = _lastMousePosition = Mouse.GetPosition((IInputElement)obj);
-            _isMouseDown = true;
-
-            if (Mouse.RightButton == MouseButtonState.Pressed)
-                SetRobotArms();
-            else if (Mouse.LeftButton == MouseButtonState.Pressed)
-            {
-                if (_currentObstacle != null) return;
-
-                Obstacles.Add(new Obstacle {Position = _mouseDownPosition, Size = new Point(10, 10)});
-            }
-            else if (Mouse.MiddleButton == MouseButtonState.Pressed)
-            {
-                var position = Mouse.GetPosition((IInputElement) obj);
-                foreach (var obstacle in Obstacles)
-                    obstacle.IsSelected = false;
-
-                _currentObstacle = Obstacles.FirstOrDefault(o => o.Position.X < position.X && o.Position.Y < position.Y
-                                                                 && o.Position.X + o.Size.X > position.X &&
-                                                                 o.Position.Y + o.Size.Y > position.Y);
-                if (_currentObstacle != null) _currentObstacle.IsSelected = true;
-            }
-        }
-
         private void SetRobotArms()
         {
             if (_currentObstacle != null) return;
@@ -241,6 +223,32 @@ namespace ReverseKinematicsPathFinding.ViewModel
                 var delta = _mouseDownPosition - new Point(Width/2.0, Height/2.0);
                 FindSolution(new Point(delta.X, delta.Y), isFirstSolution: true);
                 FindSolution(new Point(delta.X, delta.Y), isFirstSolution: false);
+            }
+        }
+
+        private void MouseDown(object obj)
+        {
+            _mouseDownPosition = _lastMousePosition = Mouse.GetPosition((IInputElement)obj);
+            _isMouseDown = true;
+
+            if (Mouse.RightButton == MouseButtonState.Pressed)
+                SetRobotArms();
+            else if (Mouse.LeftButton == MouseButtonState.Pressed)
+            {
+                if (_currentObstacle != null) return;
+
+                Obstacles.Add(new Obstacle {Position = _mouseDownPosition, Size = new Point(10, 10)});
+            }
+            else if (Mouse.MiddleButton == MouseButtonState.Pressed)
+            {
+                var position = Mouse.GetPosition((IInputElement) obj);
+                foreach (var obstacle in Obstacles)
+                    obstacle.IsSelected = false;
+
+                _currentObstacle = Obstacles.FirstOrDefault(o => o.Position.X < position.X && o.Position.Y < position.Y
+                                                                 && o.Position.X + o.Size.X > position.X &&
+                                                                 o.Position.Y + o.Size.Y > position.Y);
+                if (_currentObstacle != null) _currentObstacle.IsSelected = true;
             }
         }
 

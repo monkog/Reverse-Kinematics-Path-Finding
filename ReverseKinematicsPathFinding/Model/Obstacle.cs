@@ -81,8 +81,8 @@
         /// <returns>True if the obstacle contains the given point, otherwise false.</returns>
         public bool Contains(Point p)
         {
-            return Position.X <= p.X && Position.X + Size.X <= p.X &&
-                Position.Y <= p.Y && Position.Y + Size.Y <= p.Y;
+            return Position.X <= p.X && Position.X + Size.X >= p.X &&
+                Position.Y <= p.Y && Position.Y + Size.Y >= p.Y;
         }
 
         #endregion Public Methods
