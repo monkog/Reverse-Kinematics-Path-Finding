@@ -197,46 +197,50 @@ namespace ReverseKinematicsPathFinding.ViewModel
             _isMouseDown = true;
 
             if (Mouse.RightButton == MouseButtonState.Pressed)
-            {
-                if (_currentObstacle != null) return;
-                if (Keyboard.IsKeyDown(Key.LeftShift))
-                {
-                    Robot.DestinationPosition = _mouseDownPosition;
-                    return;
-                }
-
-                if (double.IsNaN(Robot.L1))
-                {
-                    Robot.FirstPosition = _mouseDownPosition;
-                    Robot.RecalculateRobot();
-                }
-                else if (double.IsNaN(Robot.L2))
-                {
-                    Robot.SecondPosition = _mouseDownPosition;
-                    Robot.RecalculateRobot();
-                }
-                else
-                {
-                    var delta = _mouseDownPosition - new Point(Width / 2.0, Height / 2.0);
-                    FindSolution(new Point(delta.X, delta.Y), isFirstSolution: true);
-                    FindSolution(new Point(delta.X, delta.Y), isFirstSolution: false);
-                }
-            }
+                SetRobotArms();
             else if (Mouse.LeftButton == MouseButtonState.Pressed)
             {
                 if (_currentObstacle != null) return;
 
-                Obstacles.Add(new Obstacle { Position = _mouseDownPosition, Size = new Point(10, 10) });
+                Obstacles.Add(new Obstacle {Position = _mouseDownPosition, Size = new Point(10, 10)});
             }
             else if (Mouse.MiddleButton == MouseButtonState.Pressed)
             {
-                var position = Mouse.GetPosition((IInputElement)obj);
+                var position = Mouse.GetPosition((IInputElement) obj);
                 foreach (var obstacle in Obstacles)
                     obstacle.IsSelected = false;
 
                 _currentObstacle = Obstacles.FirstOrDefault(o => o.Position.X < position.X && o.Position.Y < position.Y
-                    && o.Position.X + o.Size.X > position.X && o.Position.Y + o.Size.Y > position.Y);
+                                                                 && o.Position.X + o.Size.X > position.X &&
+                                                                 o.Position.Y + o.Size.Y > position.Y);
                 if (_currentObstacle != null) _currentObstacle.IsSelected = true;
+            }
+        }
+
+        private void SetRobotArms()
+        {
+            if (_currentObstacle != null) return;
+            if (Keyboard.IsKeyDown(Key.LeftShift))
+            {
+                Robot.DestinationPosition = _mouseDownPosition;
+                return;
+            }
+
+            if (double.IsNaN(Robot.L1))
+            {
+                Robot.FirstPosition = _mouseDownPosition;
+                Robot.RecalculateRobot();
+            }
+            else if (double.IsNaN(Robot.L2))
+            {
+                Robot.SecondPosition = _mouseDownPosition;
+                Robot.RecalculateRobot();
+            }
+            else
+            {
+                var delta = _mouseDownPosition - new Point(Width/2.0, Height/2.0);
+                FindSolution(new Point(delta.X, delta.Y), isFirstSolution: true);
+                FindSolution(new Point(delta.X, delta.Y), isFirstSolution: false);
             }
         }
 
@@ -246,11 +250,16 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
             if (Mouse.LeftButton == MouseButtonState.Pressed)
             {
-                var size = Mouse.GetPosition((IInputElement)obj) - _mouseDownPosition;
                 if (_currentObstacle != null)
-                    _currentObstacle.Size = new Point(size.X, size.Y);
+                {
+                    var size = Mouse.GetPosition((IInputElement)obj) - _lastMousePosition;
+                    _currentObstacle.Size = new Point(_currentObstacle.Size.X + size.X, _currentObstacle.Size.Y + size.Y);
+                }
                 else
+                {
+                    var size = Mouse.GetPosition((IInputElement)obj) - _mouseDownPosition;
                     Obstacles.Last().Size = new Point(size.X, size.Y);
+                }
             }
             if (Mouse.RightButton == MouseButtonState.Pressed)
             {
