@@ -36,6 +36,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -59,6 +60,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Helpers\BitmapToBitmapImageConverter.cs" />
+    <Compile Include="Helpers\BoolToColourConverter.cs" />
     <Compile Include="Model\Obstacle.cs" />
     <Compile Include="Model\Robot.cs" />
     <Compile Include="Helpers\SizeObserver.cs" />

@@ -13,9 +13,12 @@ namespace ReverseKinematicsPathFinding.Model
         private Point _firstPosition;
         private Point _secondPosition;
         private Point _zeroPosition;
+        private Point _thirdPosition;
+        private Point _fourthPosition;
 
         private double _l1;
         private double _l2;
+
         private Point _destinationPosition;
 
         #endregion Private Members
@@ -33,12 +36,11 @@ namespace ReverseKinematicsPathFinding.Model
                 if (_zeroPosition == value) return;
                 _zeroPosition = value;
                 OnPropertyChanged("ZeroPosition");
-                RecalculateRobot();
             }
         }
 
         /// <summary>
-        /// Position of the robot's first arm.
+        /// First position of the robot's first arm.
         /// </summary>
         public Point FirstPosition
         {
@@ -48,12 +50,11 @@ namespace ReverseKinematicsPathFinding.Model
                 if (_firstPosition == value) return;
                 _firstPosition = value;
                 OnPropertyChanged("FirstPosition");
-                RecalculateRobot();
             }
         }
 
         /// <summary>
-        /// Position of the robot's second arm.
+        /// Second position of the robot's first arm.
         /// </summary>
         public Point SecondPosition
         {
@@ -63,7 +64,34 @@ namespace ReverseKinematicsPathFinding.Model
                 if (_secondPosition == value) return;
                 _secondPosition = value;
                 OnPropertyChanged("SecondPosition");
-                RecalculateRobot();
+            }
+        }
+
+        /// <summary>
+        /// First position of the robot's second arm.
+        /// </summary>
+        public Point ThirdPosition
+        {
+            get { return _thirdPosition; }
+            set
+            {
+                if (_thirdPosition == value) return;
+                _thirdPosition = value;
+                OnPropertyChanged("ThirdPosition");
+            }
+        }
+
+        /// <summary>
+        /// Second position of the robot's second arm.
+        /// </summary>
+        public Point FourthPosition
+        {
+            get { return _fourthPosition; }
+            set
+            {
+                if (_fourthPosition == value) return;
+                _fourthPosition = value;
+                OnPropertyChanged("FourthPosition");
             }
         }
 
@@ -113,22 +141,15 @@ namespace ReverseKinematicsPathFinding.Model
 
         #region Constructors
 
-        public Robot()
+        public Robot(double width, double height)
         {
-            SecondPosition = FirstPosition = ZeroPosition = new Point(1200 / 2.0, 837 / 2.0);
+            FourthPosition = ThirdPosition = SecondPosition = FirstPosition = ZeroPosition = new Point(width / 2.0, height / 2.0);
             L1 = L2 = double.NaN;
         }
 
         #endregion Constructors
 
         #region Private Methods
-
-        private void RecalculateRobot()
-        {
-            if (!double.IsNaN(L1))
-                L2 = (SecondPosition - FirstPosition).Length;
-            L1 = (FirstPosition - ZeroPosition).Length;
-        }
 
         private static bool LineIntersectsLine(Point l1p1, Point l1p2, Point l2p1, Point l2p2)
         {
@@ -157,30 +178,54 @@ namespace ReverseKinematicsPathFinding.Model
 
         #region Public Methods
 
+        public void RecalculateRobot()
+        {
+            if (!double.IsNaN(L1))
+                L2 = (SecondPosition - FirstPosition).Length;
+            L1 = (FirstPosition - ZeroPosition).Length;
+
+            if (!double.IsNaN(L2))
+            {
+                var delta = SecondPosition - ZeroPosition;
+                var angles = CalculateReverseKinematicsSecondPosition(delta.X, delta.Y);
+
+                ThirdPosition = CalculateFirstPosition(angles.X);
+                FourthPosition = CalculateSecondPosition(ThirdPosition, angles.X, angles.Y);
+            }
+        }
+
         public bool IntersectsRectangle(Point p1, Point p2, Obstacle r)
         {
-            var l1=LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y));
-            var l2=LineIntersectsLine(p1, p2, new Point(r.Position.X + r.Size.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y)) ;
-            var l3=LineIntersectsLine(p1, p2, new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y), new Point(r.Position.X, r.Position.Y + r.Size.Y));
-            var l4=LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y + r.Size.Y), new Point(r.Position.X, r.Position.Y)) ;
-            var l5 =r.Contains(p1);
-            var l6 = r.Contains(p2);
-
             return LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y)) ||
                    LineIntersectsLine(p1, p2, new Point(r.Position.X + r.Size.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y)) ||
-                   LineIntersectsLine(p1, p2, new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y), new Point(r.Position.X, r.Position.Y + r.Size.Y)) ||
-                   LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y + r.Size.Y), new Point(r.Position.X, r.Position.Y)) ||
+                   LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y + r.Size.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y)) ||
+                   LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y), new Point(r.Position.X, r.Position.Y + r.Size.Y)) ||
                    (r.Contains(p1) || r.Contains(p2));
         }
 
-        public Point CalculateFirstPosition(double alpha, double beta)
+        public Point CalculateFirstPosition(double alpha)
         {
-            return new Point(L1 * Math.Cos(alpha + beta), L1 * Math.Sin(alpha + beta));
+            return new Point(ZeroPosition.X + (L1 * Math.Cos(alpha)), ZeroPosition.Y + (L1 * Math.Sin(alpha)));
         }
 
-        public Point CalculateSecondPosition(double alpha, double beta)
+        public Point CalculateSecondPosition(Point firstPosition, double alpha, double beta)
         {
-            return new Point(L1 * Math.Cos(alpha) + L2 * Math.Cos(alpha + beta), L1 * Math.Sin(alpha) + L2 * Math.Sin(alpha + beta));
+            return new Point(firstPosition.X + (L2 * (((Math.Cos(beta) * Math.Cos(alpha))) + (Math.Sin(beta) * Math.Sin(alpha)))),
+                firstPosition.Y + (L2 * (-(Math.Sin(beta) * Math.Cos(alpha)) + (Math.Cos(beta) * Math.Sin(alpha)))));
+        }
+
+        public Point CalculateReverseKinematicsFirstPosition(double x, double y)
+        {
+            var beta = -Math.Acos((x * x + y * y - L1 * L1 - L2 * L2) / (2 * L1 * L2));
+            var alpha = Math.Asin((L2 * Math.Sin(beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
+            return new Point(alpha, beta);
+        }
+
+        public Point CalculateReverseKinematicsSecondPosition(double x, double y)
+        {
+            var beta = Math.Acos((x * x + y * y - L1 * L1 - L2 * L2) / (2 * L1 * L2));
+            var alpha = -Math.Asin((L2 * Math.Sin(-beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
+            return new Point(alpha, beta);
         }
 
         #endregion Public Methods

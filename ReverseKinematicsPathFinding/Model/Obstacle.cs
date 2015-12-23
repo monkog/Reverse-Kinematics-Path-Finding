@@ -9,12 +9,13 @@
         #region Private Members
 
         private Point _position;
-
         private Point _size;
+
+        private bool _isSelected;
 
         #endregion Private Members
 
-        #region Public Members
+        #region Public Properties
 
         /// <summary>
         /// Position of the obstacle.
@@ -44,7 +45,21 @@
             }
         }
 
-        #endregion Public Members
+        /// <summary>
+        /// Is the obstacle selected.
+        /// </summary>
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set
+            {
+                if (_isSelected == value) return;
+                _isSelected = value;
+                OnPropertyChanged("IsSelected");
+            }
+        }
+
+        #endregion Public Properties
 
         #region Constructors
 
@@ -52,19 +67,24 @@
         {
             Position = new Point();
             Size = new Point();
+            IsSelected = false;
         }
 
         #endregion Constructors
+
+        #region Public Methods
 
         /// <summary>
         /// Checks if the given point is inside the obstacle.
         /// </summary>
         /// <param name="p">Point to check.</param>
         /// <returns>True if the obstacle contains the given point, otherwise false.</returns>
-        internal bool Contains(Point p)
+        public bool Contains(Point p)
         {
             return Position.X <= p.X && Position.X + Size.X <= p.X &&
                 Position.Y <= p.Y && Position.Y + Size.Y <= p.Y;
         }
+
+        #endregion Public Methods
     }
 }

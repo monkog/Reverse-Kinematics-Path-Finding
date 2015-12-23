@@ -11,6 +11,10 @@
     <Window.DataContext>
         <viewModel:MainViewModel/>
     </Window.DataContext>
+    
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding DeleteCommand}" Key="Delete"/>
+    </Window.InputBindings>
 
     <Window.Resources>
         <Style TargetType="Line">
@@ -25,10 +29,11 @@
             <Setter Property="Height" Value="4"/>
             <Setter Property="Background" Value="SlateGray"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="Margin" Value="25"/>
+            <Setter Property="Margin" Value="25, 10"/>
         </Style>
         
         <helpers:BitmapToBitmapImageConverter x:Key="BitmapToBitmapImageConverter"/>
+        <helpers:BoolToColourConverter x:Key="BoolToColourConverter" />
     </Window.Resources>
 
     <Grid>
@@ -38,13 +43,13 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Column="0" Orientation="Vertical">
-            <TextBlock Text="Reverse Kinematics" FontSize="18" FontWeight="Black" HorizontalAlignment="Center"/>
-            <Separator/>
-
             <Button Background="Transparent" Content="Calculate" Command="{Binding CalculatePathCommand}" Width="100" Height="50"/>
             <Separator/>
 
             <Image Width="360" Height="360" Source="{Binding ConfigurationSpaceImage, Converter={StaticResource ResourceKey=BitmapToBitmapImageConverter}}"/>
+            <Separator/>
+            
+            <Image Width="360" Height="360" Source="{Binding ReachableSpaceImage, Converter={StaticResource ResourceKey=BitmapToBitmapImageConverter}}"/>
         </StackPanel>
 
         <Canvas Grid.Column="1" Background="Black" Name="DemoCanvas">
@@ -59,12 +64,6 @@
                     <i:InvokeCommandAction Command="{Binding MouseUpCommand}" CommandParameter="{Binding ElementName=DemoCanvas}"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
-            <Line X1="{Binding Robot.ZeroPosition.X}" Y1="{Binding Robot.ZeroPosition.Y}" 
-                  X2="{Binding Robot.FirstPosition.X}" Y2="{Binding Robot.FirstPosition.Y}"/>
-            <Line X1="{Binding Robot.FirstPosition.X}" Y1="{Binding Robot.FirstPosition.Y}" 
-                  X2="{Binding Robot.SecondPosition.X}" Y2="{Binding Robot.SecondPosition.Y}"/>
-            <Ellipse Canvas.Left="{Binding Robot.DestinationPosition.X}" Canvas.Top="{Binding Robot.DestinationPosition.Y}"
-                     Width="10" Height="10" Fill="HotPink"/>
             <ItemsControl ItemsSource="{Binding Obstacles}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -79,12 +78,20 @@
                 </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Rectangle Width="{Binding Size.X}" Height="{Binding Size.Y}" 
-                               Fill="SlateGray" Stroke="White" StrokeThickness="2">
-                        </Rectangle>
+                        <Rectangle Width="{Binding Size.X}" Height="{Binding Size.Y}" Fill="LightGray" StrokeThickness="2" Stroke="{Binding IsSelected, Converter={StaticResource BoolToColourConverter}}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            <Line X1="{Binding Robot.ZeroPosition.X}" Y1="{Binding Robot.ZeroPosition.Y}" 
+                  X2="{Binding Robot.FirstPosition.X}" Y2="{Binding Robot.FirstPosition.Y}"/>
+            <Line X1="{Binding Robot.FirstPosition.X}" Y1="{Binding Robot.FirstPosition.Y}" 
+                  X2="{Binding Robot.SecondPosition.X}" Y2="{Binding Robot.SecondPosition.Y}"/>
+            <Line X1="{Binding Robot.ZeroPosition.X}" Y1="{Binding Robot.ZeroPosition.Y}" 
+                  X2="{Binding Robot.ThirdPosition.X}" Y2="{Binding Robot.ThirdPosition.Y}"/>
+            <Line X1="{Binding Robot.ThirdPosition.X}" Y1="{Binding Robot.ThirdPosition.Y}" 
+                  X2="{Binding Robot.FourthPosition.X}" Y2="{Binding Robot.FourthPosition.Y}"/>
+            <Ellipse Canvas.Left="{Binding Robot.DestinationPosition.X}" Canvas.Top="{Binding Robot.DestinationPosition.Y}"
+                     Width="10" Height="10" Fill="HotPink"/>
         </Canvas>
     </Grid>
 </Window>
