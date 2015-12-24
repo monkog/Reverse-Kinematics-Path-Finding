@@ -96,7 +96,7 @@
             <Line X1="{Binding Robot.ZeroPosition.X}" Y1="{Binding Robot.ZeroPosition.Y}" 
                   X2="{Binding Robot.ThirdPosition.X}" Y2="{Binding Robot.ThirdPosition.Y}"/>
             <Line X1="{Binding Robot.ThirdPosition.X}" Y1="{Binding Robot.ThirdPosition.Y}" 
-                  X2="{Binding Robot.FourthPosition.X}" Y2="{Binding Robot.FourthPosition.Y}"/>
+                  X2="{Binding Robot.SecondPosition.X}" Y2="{Binding Robot.SecondPosition.Y}"/>
             <Ellipse Canvas.Left="{Binding Robot.DestinationPosition.X}" Canvas.Top="{Binding Robot.DestinationPosition.Y}"
                      Width="10" Height="10" Fill="HotPink"/>
         </Canvas>

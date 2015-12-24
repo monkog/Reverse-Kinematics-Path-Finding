@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
@@ -111,10 +112,8 @@ namespace ReverseKinematicsPathFinding.ViewModel
             Obstacles = new ObservableCollection<Obstacle>();
             Robot = new Robot(Width, Height);
 
-            ConfigurationSpaceImage = new Bitmap(360, 360);
-            ReachableSpaceImage = new Bitmap(360, 360);
-            _floodConfigurationSpace = new int[360, 360];
-            _timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 1, 500) };
+            ClearConfigurationData();
+            _timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 500) };
             _timer.Tick += _timer_Tick;
             _ticks = 0;
         }
@@ -123,10 +122,94 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
         #region Private Methods
 
+        private void ClearConfigurationData()
+        {
+            ConfigurationSpaceImage = new Bitmap(360, 360);
+            ReachableSpaceImage = new Bitmap(360, 360);
+            _floodConfigurationSpace = new int[360, 360];
+        }
+
         private void CalculatePath(object obj)
         {
+            ClearConfigurationData();
             CalculateConfiguration();
-            //CalculateReachableConfiguration();
+            CalculateReachableConfiguration();
+        }
+
+        private void CalculateReachableConfiguration()
+        {
+            var startAngles = Robot.CalculateReverseKinematicsFirstPosition(Robot.SecondPosition.X - Robot.ZeroPosition.X, Robot.SecondPosition.Y - Robot.ZeroPosition.Y);
+            if (double.IsNaN(startAngles.X) || double.IsNaN(startAngles.Y))
+                startAngles = Robot.CalculateReverseKinematicsSecondPosition(Robot.SecondPosition.X - Robot.ZeroPosition.X, Robot.SecondPosition.Y - Robot.ZeroPosition.Y);
+            var endAngles = Robot.CalculateReverseKinematicsFirstPosition(Robot.DestinationPosition.X - Robot.ZeroPosition.X, Robot.DestinationPosition.Y - Robot.ZeroPosition.Y);
+            if (double.IsNaN(endAngles.X) || double.IsNaN(endAngles.Y))
+                endAngles = Robot.CalculateReverseKinematicsSecondPosition(Robot.DestinationPosition.X - Robot.ZeroPosition.X, Robot.DestinationPosition.Y - Robot.ZeroPosition.Y);
+
+            if (double.IsNaN(startAngles.X) || double.IsNaN(startAngles.Y))
+            {
+                MessageBox.Show("Cannot calculate start configuration");
+                return;
+            }
+            if (double.IsNaN(endAngles.X) || double.IsNaN(endAngles.Y))
+            {
+                MessageBox.Show("Cannot calculate end configuration");
+                return;
+            }
+
+            var foundPath = FloodFill((int)Math.Abs(startAngles.X * 180 / Math.PI), (int)Math.Abs(startAngles.Y * 180 / Math.PI),
+                (int)Math.Abs(endAngles.X * 180 / Math.PI), (int)Math.Abs(endAngles.Y * 180 / Math.PI), 0);
+
+            OnPropertyChanged("ConfigurationSpaceImage");
+        }
+
+        private bool FloodFill(int startX, int startY, int endX, int endY, int sequenceNumber)
+        {
+            var neighbours = new List<Tuple<int, int>>();
+            neighbours.Add(new Tuple<int, int>(startX, startY));
+
+            do
+            {
+                sequenceNumber = Math.Min(255, sequenceNumber + 1);
+
+                var newNeighbours = new List<Tuple<int, int>>();
+                foreach (var neighbour in neighbours)
+                {
+                    startX = neighbour.Item1;
+                    startY = neighbour.Item2;
+                    if (_floodConfigurationSpace[(startX - 1 + 360) % 360, startY] == 0)
+                    {
+                        _floodConfigurationSpace[(startX - 1 + 360) % 360, startY] = sequenceNumber;
+                        ConfigurationSpaceImage.SetPixel((startX - 1 + 360) % 360, startY, Color.FromArgb(255, 0, sequenceNumber));
+                        newNeighbours.Add(new Tuple<int, int>((startX - 1 + 360) % 360, startY));
+                        if ((startX - 1 + 360) % 360 == endX && startY == endY) return true;
+                    }
+                    if (_floodConfigurationSpace[startX, (startY + 1) % 360] == 0)
+                    {
+                        _floodConfigurationSpace[startX, (startY + 1) % 360] = sequenceNumber;
+                        ConfigurationSpaceImage.SetPixel(startX, (startY + 1) % 360, Color.FromArgb(255, 0, sequenceNumber));
+                        newNeighbours.Add(new Tuple<int, int>(startX, (startY + 1) % 360));
+                        if (startX == endX && (startY + 1) % 360 == endY) return true;
+                    }
+                    if (_floodConfigurationSpace[startX, (startY - 1 + 360) % 360] == 0)
+                    {
+                        _floodConfigurationSpace[startX, (startY - 1 + 360) % 360] = sequenceNumber;
+                        ConfigurationSpaceImage.SetPixel(startX, (startY - 1 + 360) % 360, Color.FromArgb(255, 0, sequenceNumber));
+                        newNeighbours.Add(new Tuple<int, int>(startX, (startY - 1 + 360) % 360));
+                        if (startX == endX && (startY - 1 + 360) % 360 == endY) return true;
+                    }
+                    if (_floodConfigurationSpace[(startX + 1) % 360, startY] == 0)
+                    {
+                        _floodConfigurationSpace[(startX + 1) % 360, startY] = sequenceNumber;
+                        ConfigurationSpaceImage.SetPixel((startX + 1) % 360, startY, Color.FromArgb(255, 0, sequenceNumber));
+                        newNeighbours.Add(new Tuple<int, int>((startX + 1) % 360, startY));
+                        if ((startX + 1) % 360 == endX && startY == endY) return true;
+                    }
+                }
+                neighbours = newNeighbours;
+            } while (neighbours.Any());
+
+            MessageBox.Show("Cannot calculate the path.");
+            return false;
         }
 
         void _timer_Tick(object sender, EventArgs e)
@@ -158,15 +241,9 @@ namespace ReverseKinematicsPathFinding.ViewModel
                         ReachableSpaceImage.SetPixel(i, j, Color.DarkRed);
                         _floodConfigurationSpace[i, j] = -1;
                         ConfigurationSpaceImage.SetPixel(i, j, Color.DarkRed);
-                        //if (p2.X < 0 || p2.Y < 0 || p2.X >= Width || p2.Y >= Height) continue;
-                        //ConfigurationSpaceImage.SetPixel((int)(p2.X * 360 / Width), (int)(p2.Y * 360 / Height), Color.DarkRed);
                     }
                     else
-                    {
                         ReachableSpaceImage.SetPixel(i, j, Color.RoyalBlue);
-                        if (p2.X < 0 || p2.Y < 0 || p2.X >= Width || p2.Y >= Height) continue;
-                        //ConfigurationSpaceImage.SetPixel((int)(p2.X * 360 / Width), (int)(p2.Y * 360 / Height), Color.RoyalBlue);
-                    }
                 }
             }
             OnPropertyChanged("ConfigurationSpaceImage");
@@ -190,13 +267,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
                 Robot.SecondPosition = p2;
             }
             else
-            {
-                var p1 = Robot.CalculateFirstPosition(angles.X);
-                var p2 = Robot.CalculateSecondPosition(p1, angles.X, angles.Y);
-
-                Robot.ThirdPosition = p1;
-                Robot.FourthPosition = p2;
-            }
+                Robot.ThirdPosition = Robot.CalculateFirstPosition(angles.X);
         }
 
         private void SetRobotArms()
@@ -220,7 +291,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
             }
             else
             {
-                var delta = _mouseDownPosition - new Point(Width/2.0, Height/2.0);
+                var delta = _mouseDownPosition - new Point(Width / 2.0, Height / 2.0);
                 FindSolution(new Point(delta.X, delta.Y), isFirstSolution: true);
                 FindSolution(new Point(delta.X, delta.Y), isFirstSolution: false);
             }
@@ -237,11 +308,11 @@ namespace ReverseKinematicsPathFinding.ViewModel
             {
                 if (_currentObstacle != null) return;
 
-                Obstacles.Add(new Obstacle {Position = _mouseDownPosition, Size = new Point(10, 10)});
+                Obstacles.Add(new Obstacle { Position = _mouseDownPosition, Size = new Point(10, 10) });
             }
             else if (Mouse.MiddleButton == MouseButtonState.Pressed)
             {
-                var position = Mouse.GetPosition((IInputElement) obj);
+                var position = Mouse.GetPosition((IInputElement)obj);
                 foreach (var obstacle in Obstacles)
                     obstacle.IsSelected = false;
 

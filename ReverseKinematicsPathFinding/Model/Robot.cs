@@ -14,7 +14,6 @@ namespace ReverseKinematicsPathFinding.Model
         private Point _secondPosition;
         private Point _zeroPosition;
         private Point _thirdPosition;
-        private Point _fourthPosition;
 
         private double _l1;
         private double _l2;
@@ -78,20 +77,6 @@ namespace ReverseKinematicsPathFinding.Model
                 if (_thirdPosition == value) return;
                 _thirdPosition = value;
                 OnPropertyChanged("ThirdPosition");
-            }
-        }
-
-        /// <summary>
-        /// Second position of the robot's second arm.
-        /// </summary>
-        public Point FourthPosition
-        {
-            get { return _fourthPosition; }
-            set
-            {
-                if (_fourthPosition == value) return;
-                _fourthPosition = value;
-                OnPropertyChanged("FourthPosition");
             }
         }
 
@@ -161,7 +146,7 @@ namespace ReverseKinematicsPathFinding.Model
 
         public Robot(double width, double height)
         {
-            FourthPosition = ThirdPosition = SecondPosition = FirstPosition = ZeroPosition = new Point(width / 2.0, height / 2.0);
+            ThirdPosition = SecondPosition = FirstPosition = ZeroPosition = new Point(width / 2.0, height / 2.0);
             DestinationPosition = ZeroPosition;
             L1 = L2 = double.NaN;
         }
@@ -209,19 +194,11 @@ namespace ReverseKinematicsPathFinding.Model
                 var angles = CalculateReverseKinematicsSecondPosition(delta.X, delta.Y);
 
                 ThirdPosition = CalculateFirstPosition(angles.X);
-                FourthPosition = CalculateSecondPosition(ThirdPosition, angles.X, angles.Y);
             }
         }
 
         public bool IntersectsRectangle(Point p1, Point p2, Obstacle r)
         {
-            var a = LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y));
-            var b = LineIntersectsLine(p1, p2, new Point(r.Position.X + r.Size.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y));
-            var c = LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y + r.Size.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y));
-            var d = LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y), new Point(r.Position.X, r.Position.Y + r.Size.Y));
-            var e = r.Contains(p1);
-            var f = r.Contains(p2);
-
             return LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y)) ||
                    LineIntersectsLine(p1, p2, new Point(r.Position.X + r.Size.X, r.Position.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y)) ||
                    LineIntersectsLine(p1, p2, new Point(r.Position.X, r.Position.Y + r.Size.Y), new Point(r.Position.X + r.Size.X, r.Position.Y + r.Size.Y)) ||
