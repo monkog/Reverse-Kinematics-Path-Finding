@@ -44,7 +44,10 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Column="0" Orientation="Vertical">
-            <Button Background="Transparent" Content="Calculate" Command="{Binding CalculatePathCommand}" Width="100" Height="50"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Background="Transparent" Content="Calculate" Command="{Binding CalculatePathCommand}" Width="100" Height="50" Margin="10, 0"/>
+                <Button Background="Transparent" Content="Start animation" Command="{Binding StartAnimationCommand}" Width="100" Height="50" Margin="10, 0"/>
+            </StackPanel>
             <Separator/>
 
             <Image Width="360" Height="360" Source="{Binding ConfigurationSpaceImage, Converter={StaticResource ResourceKey=BitmapToBitmapImageConverter}}"/>

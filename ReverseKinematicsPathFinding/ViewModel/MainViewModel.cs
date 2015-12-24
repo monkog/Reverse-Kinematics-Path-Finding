@@ -22,6 +22,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
         private ObservableCollection<Obstacle> _obstacles;
 
         private ICommand _calculatePathCommand;
+        private ICommand _startAnimationCommand;
 
         private ICommand _mouseDownCommand;
         private ICommand _mouseMoveCommand;
@@ -36,9 +37,10 @@ namespace ReverseKinematicsPathFinding.ViewModel
         private Bitmap _reachableSpaceImage;
 
         private int[,] _floodConfigurationSpace;
+        private List<Tuple<int, int>> _configurations;
 
         private DispatcherTimer _timer;
-        private int _ticks;
+        private DateTime _timerStart;
 
         private Obstacle _currentObstacle;
 
@@ -93,6 +95,8 @@ namespace ReverseKinematicsPathFinding.ViewModel
             }
         }
 
+        public ICommand StartAnimationCommand { get { return _startAnimationCommand ?? (_startAnimationCommand = new DelegateCommand(StartAnimation)); } }
+
         public ICommand CalculatePathCommand { get { return _calculatePathCommand ?? (_calculatePathCommand = new DelegateCommand(CalculatePath)); } }
 
         public ICommand MouseDownCommand { get { return _mouseDownCommand ?? (_mouseDownCommand = new DelegateCommand(MouseDown)); } }
@@ -115,7 +119,6 @@ namespace ReverseKinematicsPathFinding.ViewModel
             ClearConfigurationData();
             _timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 500) };
             _timer.Tick += _timer_Tick;
-            _ticks = 0;
         }
 
         #endregion Constructors
@@ -129,47 +132,78 @@ namespace ReverseKinematicsPathFinding.ViewModel
             _floodConfigurationSpace = new int[360, 360];
         }
 
-        private void CalculatePath(object obj)
+        private List<Tuple<int, int>> ReversePathFinding(Tuple<int, int> startConfiguration, Tuple<int, int> endConfiguration)
         {
-            ClearConfigurationData();
-            CalculateConfiguration();
-            CalculateReachableConfiguration();
+            var configurations = new List<Tuple<int, int>>();
+            var currentConfiguration = endConfiguration;
+            configurations.Add(currentConfiguration);
+
+            while (_floodConfigurationSpace[currentConfiguration.Item1, currentConfiguration.Item2] != 1 &&
+                (currentConfiguration.Item1 != startConfiguration.Item1 || currentConfiguration.Item2 != startConfiguration.Item2))
+            {
+                currentConfiguration = (new List<Tuple<int, int>>
+                {
+                    new Tuple<int, int>((currentConfiguration.Item1 + 1 + 360) % 360, currentConfiguration.Item2),
+                    new Tuple<int, int>(currentConfiguration.Item1, (currentConfiguration.Item2 + 1 + 360) % 360),
+                    new Tuple<int, int>((currentConfiguration.Item1 - 1 + 360) % 360, currentConfiguration.Item2),
+                    new Tuple<int, int>(currentConfiguration.Item1, (currentConfiguration.Item2 - 1 + 360) % 360)
+                }).First(i => _floodConfigurationSpace[i.Item1, i.Item2] == _floodConfigurationSpace[currentConfiguration.Item1, currentConfiguration.Item2] - 1);
+                configurations.Add(currentConfiguration);
+            }
+
+            configurations.Reverse();
+            return configurations;
         }
 
-        private void CalculateReachableConfiguration()
+        private bool CalculateReachableConfiguration(out Tuple<int, int> startConfiguration, out Tuple<int, int> endConfiguration)
         {
-            var startAngles = Robot.CalculateReverseKinematicsFirstPosition(Robot.SecondPosition.X - Robot.ZeroPosition.X, Robot.SecondPosition.Y - Robot.ZeroPosition.Y);
-            if (double.IsNaN(startAngles.X) || double.IsNaN(startAngles.Y))
-                startAngles = Robot.CalculateReverseKinematicsSecondPosition(Robot.SecondPosition.X - Robot.ZeroPosition.X, Robot.SecondPosition.Y - Robot.ZeroPosition.Y);
-            var endAngles = Robot.CalculateReverseKinematicsFirstPosition(Robot.DestinationPosition.X - Robot.ZeroPosition.X, Robot.DestinationPosition.Y - Robot.ZeroPosition.Y);
-            if (double.IsNaN(endAngles.X) || double.IsNaN(endAngles.Y))
-                endAngles = Robot.CalculateReverseKinematicsSecondPosition(Robot.DestinationPosition.X - Robot.ZeroPosition.X, Robot.DestinationPosition.Y - Robot.ZeroPosition.Y);
-
-            if (double.IsNaN(startAngles.X) || double.IsNaN(startAngles.Y))
-            {
-                MessageBox.Show("Cannot calculate start configuration");
-                return;
-            }
-            if (double.IsNaN(endAngles.X) || double.IsNaN(endAngles.Y))
-            {
-                MessageBox.Show("Cannot calculate end configuration");
-                return;
-            }
-
-            var foundPath = FloodFill((int)Math.Abs(startAngles.X * 180 / Math.PI), (int)Math.Abs(startAngles.Y * 180 / Math.PI),
-                (int)Math.Abs(endAngles.X * 180 / Math.PI), (int)Math.Abs(endAngles.Y * 180 / Math.PI), 0);
+            bool result;
+            if (!(result = FindConfigurationForSingleArm(out startConfiguration, out endConfiguration, isFirstArm: true)))
+                result = FindConfigurationForSingleArm(out startConfiguration, out endConfiguration, isFirstArm: false);
 
             OnPropertyChanged("ConfigurationSpaceImage");
+            return result;
         }
 
-        private bool FloodFill(int startX, int startY, int endX, int endY, int sequenceNumber)
+        private bool FindConfigurationForSingleArm(out Tuple<int, int> startConfiguration, out Tuple<int, int> endConfiguration, bool isFirstArm)
+        {
+            var startAngles = isFirstArm ? Robot.CalculateReverseKinematicsFirstPosition(Robot.SecondPosition.X - Robot.ZeroPosition.X, Robot.SecondPosition.Y - Robot.ZeroPosition.Y)
+                : Robot.CalculateReverseKinematicsSecondPosition(Robot.SecondPosition.X - Robot.ZeroPosition.X, Robot.SecondPosition.Y - Robot.ZeroPosition.Y);
+
+            var endAngles = isFirstArm ? Robot.CalculateReverseKinematicsFirstPosition(Robot.DestinationPosition.X - Robot.ZeroPosition.X, Robot.DestinationPosition.Y - Robot.ZeroPosition.Y)
+                : Robot.CalculateReverseKinematicsSecondPosition(Robot.DestinationPosition.X - Robot.ZeroPosition.X, Robot.DestinationPosition.Y - Robot.ZeroPosition.Y);
+
+            if (double.IsNaN(startAngles.X) || double.IsNaN(startAngles.Y) || double.IsNaN(endAngles.X) ||
+                double.IsNaN(endAngles.Y))
+            {
+                MessageBox.Show(string.Format("Cannot calculate {0} angles configuration", isFirstArm ? "first" : "second"));
+                startConfiguration = endConfiguration = null;
+                return false;
+            }
+
+            startConfiguration = new Tuple<int, int>((int)((startAngles.X * 180 / Math.PI) + 360) % 360, (int)((startAngles.Y * 180 / Math.PI) + 360) % 360);
+            endConfiguration = new Tuple<int, int>((int)((endAngles.X * 180 / Math.PI) + 360) % 360, (int)((endAngles.Y * 180 / Math.PI) + 360) % 360);
+            bool foundPath = FloodFill(startConfiguration.Item1, startConfiguration.Item2, endConfiguration.Item1, endConfiguration.Item2, 0, isFirstArm);
+
+            for (int i = 0; i < 2; i++)
+                for (int j = 0; j < 2; j++)
+                {
+                    ConfigurationSpaceImage.SetPixel(startConfiguration.Item1 + i, startConfiguration.Item2 + j, isFirstArm ? Color.Lime : Color.Magenta);
+                    ConfigurationSpaceImage.SetPixel(endConfiguration.Item1 + i, endConfiguration.Item2 + j, isFirstArm ? Color.Lime : Color.Magenta);
+                }
+
+            return foundPath;
+        }
+
+        private bool FloodFill(int startX, int startY, int endX, int endY, int sequenceNumber, bool isFirstArm)
         {
             var neighbours = new List<Tuple<int, int>>();
             neighbours.Add(new Tuple<int, int>(startX, startY));
 
             do
             {
-                sequenceNumber = Math.Min(255, sequenceNumber + 1);
+                sequenceNumber++;
+                var color = Math.Min(255, sequenceNumber + 1);
 
                 var newNeighbours = new List<Tuple<int, int>>();
                 foreach (var neighbour in neighbours)
@@ -179,28 +213,28 @@ namespace ReverseKinematicsPathFinding.ViewModel
                     if (_floodConfigurationSpace[(startX - 1 + 360) % 360, startY] == 0)
                     {
                         _floodConfigurationSpace[(startX - 1 + 360) % 360, startY] = sequenceNumber;
-                        ConfigurationSpaceImage.SetPixel((startX - 1 + 360) % 360, startY, Color.FromArgb(255, 0, sequenceNumber));
+                        ConfigurationSpaceImage.SetPixel((startX - 1 + 360) % 360, startY, Color.FromArgb(color, color, color));
                         newNeighbours.Add(new Tuple<int, int>((startX - 1 + 360) % 360, startY));
                         if ((startX - 1 + 360) % 360 == endX && startY == endY) return true;
                     }
                     if (_floodConfigurationSpace[startX, (startY + 1) % 360] == 0)
                     {
                         _floodConfigurationSpace[startX, (startY + 1) % 360] = sequenceNumber;
-                        ConfigurationSpaceImage.SetPixel(startX, (startY + 1) % 360, Color.FromArgb(255, 0, sequenceNumber));
+                        ConfigurationSpaceImage.SetPixel(startX, (startY + 1) % 360, Color.FromArgb(color, color, color));
                         newNeighbours.Add(new Tuple<int, int>(startX, (startY + 1) % 360));
                         if (startX == endX && (startY + 1) % 360 == endY) return true;
                     }
                     if (_floodConfigurationSpace[startX, (startY - 1 + 360) % 360] == 0)
                     {
                         _floodConfigurationSpace[startX, (startY - 1 + 360) % 360] = sequenceNumber;
-                        ConfigurationSpaceImage.SetPixel(startX, (startY - 1 + 360) % 360, Color.FromArgb(255, 0, sequenceNumber));
+                        ConfigurationSpaceImage.SetPixel(startX, (startY - 1 + 360) % 360, Color.FromArgb(color, color, color));
                         newNeighbours.Add(new Tuple<int, int>(startX, (startY - 1 + 360) % 360));
                         if (startX == endX && (startY - 1 + 360) % 360 == endY) return true;
                     }
                     if (_floodConfigurationSpace[(startX + 1) % 360, startY] == 0)
                     {
                         _floodConfigurationSpace[(startX + 1) % 360, startY] = sequenceNumber;
-                        ConfigurationSpaceImage.SetPixel((startX + 1) % 360, startY, Color.FromArgb(255, 0, sequenceNumber));
+                        ConfigurationSpaceImage.SetPixel((startX + 1) % 360, startY, Color.FromArgb(color, color, color));
                         newNeighbours.Add(new Tuple<int, int>((startX + 1) % 360, startY));
                         if ((startX + 1) % 360 == endX && startY == endY) return true;
                     }
@@ -208,13 +242,12 @@ namespace ReverseKinematicsPathFinding.ViewModel
                 neighbours = newNeighbours;
             } while (neighbours.Any());
 
-            MessageBox.Show("Cannot calculate the path.");
+            MessageBox.Show(string.Format("Cannot calculate path for {0} arm", isFirstArm ? "first" : "second"));
             return false;
         }
 
         void _timer_Tick(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
         }
 
         private void CalculateConfiguration()
@@ -366,10 +399,33 @@ namespace ReverseKinematicsPathFinding.ViewModel
             }
         }
 
+        private void CalculatePath(object obj)
+        {
+            ClearConfigurationData();
+            CalculateConfiguration();
+
+            Tuple<int, int> startConfiguration, endConfiguration;
+            if (CalculateReachableConfiguration(out startConfiguration, out endConfiguration))
+            {
+                _configurations = ReversePathFinding(startConfiguration, endConfiguration);
+                foreach (var configuration in _configurations)
+                {
+                    for (int i = 0; i < 2; i++)
+                        for (int j = 0; j < 2; j++)
+                            ConfigurationSpaceImage.SetPixel((configuration.Item1 + i + 360) % 360, (configuration.Item2 + j + 360) % 360, Color.Goldenrod);
+                }
+                OnPropertyChanged("ConfigurationSpaceImage");
+            }
+        }
+
+        private void StartAnimation(object obj)
+        {
+            if (_configurations == null) return;
+
+            _timerStart = DateTime.Now;
+            _timer.Start();
+        }
+
         #endregion Private Methods
-
-        #region Public Methods
-
-        #endregion Public Methods
     }
 }

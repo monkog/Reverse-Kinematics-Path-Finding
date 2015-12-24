@@ -155,25 +155,19 @@ namespace ReverseKinematicsPathFinding.Model
 
         #region Private Methods
 
-        private static bool LineIntersectsLine(Point l1p1, Point l1p2, Point l2p1, Point l2p2)
+        private static bool LineIntersectsLine(Point l1P1, Point l1P2, Point l2P1, Point l2P2)
         {
-            double q = (l1p1.Y - l2p1.Y) * (l2p2.X - l2p1.X) - (l1p1.X - l2p1.X) * (l2p2.Y - l2p1.Y);
-            double d = (l1p2.X - l1p1.X) * (l2p2.Y - l2p1.Y) - (l1p2.Y - l1p1.Y) * (l2p2.X - l2p1.X);
+            double q = (l1P1.Y - l2P1.Y) * (l2P2.X - l2P1.X) - (l1P1.X - l2P1.X) * (l2P2.Y - l2P1.Y);
+            double d = (l1P2.X - l1P1.X) * (l2P2.Y - l2P1.Y) - (l1P2.Y - l1P1.Y) * (l2P2.X - l2P1.X);
 
-            if (d == 0)
-            {
-                return false;
-            }
+            if (d == 0)return false;
 
             double r = q / d;
 
-            q = (l1p1.Y - l2p1.Y) * (l1p2.X - l1p1.X) - (l1p1.X - l2p1.X) * (l1p2.Y - l1p1.Y);
+            q = (l1P1.Y - l2P1.Y) * (l1P2.X - l1P1.X) - (l1P1.X - l2P1.X) * (l1P2.Y - l1P1.Y);
             double s = q / d;
 
-            if (r < 0 || r > 1 || s < 0 || s > 1)
-            {
-                return false;
-            }
+            if (r < 0 || r > 1 || s < 0 || s > 1)return false;
 
             return true;
         }
