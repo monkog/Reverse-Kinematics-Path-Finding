@@ -117,7 +117,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
             Robot = new Robot(Width, Height);
 
             ClearConfigurationData();
-            _timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 500) };
+            _timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 50) };
             _timer.Tick += _timer_Tick;
         }
 
@@ -188,8 +188,8 @@ namespace ReverseKinematicsPathFinding.ViewModel
             for (int i = 0; i < 2; i++)
                 for (int j = 0; j < 2; j++)
                 {
-                    ConfigurationSpaceImage.SetPixel(startConfiguration.Item1 + i, startConfiguration.Item2 + j, isFirstArm ? Color.Lime : Color.Magenta);
-                    ConfigurationSpaceImage.SetPixel(endConfiguration.Item1 + i, endConfiguration.Item2 + j, isFirstArm ? Color.Lime : Color.Magenta);
+                    ConfigurationSpaceImage.SetPixel((startConfiguration.Item1 + i + 360) % 360, (startConfiguration.Item2 + j + 360) % 360, isFirstArm ? Color.Lime : Color.Magenta);
+                    ConfigurationSpaceImage.SetPixel((endConfiguration.Item1 + i + 360) % 360, (endConfiguration.Item2 + j + 360) % 360, isFirstArm ? Color.Lime : Color.Magenta);
                 }
 
             return foundPath;
@@ -248,6 +248,15 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
         void _timer_Tick(object sender, EventArgs e)
         {
+            var timeDelta = (int)((DateTime.Now - _timerStart).TotalMilliseconds / 50);
+            if (timeDelta >= _configurations.Count) return;
+
+            var currentPosition = _configurations.ElementAt(timeDelta);
+            var p1 = Robot.CalculateFirstPosition(currentPosition.Item1 * Math.PI / 180.0);
+            var p2 = Robot.CalculateSecondPosition(p1, currentPosition.Item1 * Math.PI / 180.0, currentPosition.Item2 * Math.PI / 180.0);
+
+            Robot.FirstPosition = p1;
+            Robot.SecondPosition = p2;
         }
 
         private void CalculateConfiguration()
