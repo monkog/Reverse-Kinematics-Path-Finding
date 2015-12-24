@@ -62,7 +62,6 @@
     <Compile Include="Helpers\BitmapToBitmapImageConverter.cs" />
     <Compile Include="Helpers\BoolToColourConverter.cs" />
     <Compile Include="Helpers\MoveToCenterConverter.cs" />
-    <Compile Include="Model\FloodFillElement.cs" />
     <Compile Include="Model\Obstacle.cs" />
     <Compile Include="Model\Robot.cs" />
     <Compile Include="Helpers\SizeObserver.cs" />

@@ -19,6 +19,8 @@ namespace ReverseKinematicsPathFinding.Model
         private double _l2;
 
         private Point _destinationPosition;
+        private Point _animationSecondPosition;
+        private Point _animationFirstPosition;
 
         #endregion Private Members
 
@@ -77,6 +79,34 @@ namespace ReverseKinematicsPathFinding.Model
                 if (_thirdPosition == value) return;
                 _thirdPosition = value;
                 OnPropertyChanged("ThirdPosition");
+            }
+        }
+
+        /// <summary>
+        /// Second position of the robot's animation arm.
+        /// </summary>
+        public Point AnimationSecondPosition
+        {
+            get { return _animationSecondPosition; }
+            set
+            {
+                if (_animationSecondPosition == value) return;
+                _animationSecondPosition = value;
+                OnPropertyChanged("AnimationSecondPosition");
+            }
+        }
+
+        /// <summary>
+        /// First position of the robot's animation arm.
+        /// </summary>
+        public Point AnimationFirstPosition
+        {
+            get { return _animationFirstPosition; }
+            set
+            {
+                if (_animationFirstPosition == value) return;
+                _animationFirstPosition = value;
+                OnPropertyChanged("AnimationFirstPosition");
             }
         }
 
@@ -146,7 +176,8 @@ namespace ReverseKinematicsPathFinding.Model
 
         public Robot(double width, double height)
         {
-            ThirdPosition = SecondPosition = FirstPosition = ZeroPosition = new Point(width / 2.0, height / 2.0);
+            AnimationFirstPosition = AnimationSecondPosition = ThirdPosition = SecondPosition = FirstPosition = ZeroPosition = 
+                new Point(width / 2.0, height / 2.0);
             DestinationPosition = ZeroPosition;
             L1 = L2 = double.NaN;
         }
@@ -160,14 +191,14 @@ namespace ReverseKinematicsPathFinding.Model
             double q = (l1P1.Y - l2P1.Y) * (l2P2.X - l2P1.X) - (l1P1.X - l2P1.X) * (l2P2.Y - l2P1.Y);
             double d = (l1P2.X - l1P1.X) * (l2P2.Y - l2P1.Y) - (l1P2.Y - l1P1.Y) * (l2P2.X - l2P1.X);
 
-            if (d == 0)return false;
+            if (d == 0) return false;
 
             double r = q / d;
 
             q = (l1P1.Y - l2P1.Y) * (l1P2.X - l1P1.X) - (l1P1.X - l2P1.X) * (l1P2.Y - l1P1.Y);
             double s = q / d;
 
-            if (r < 0 || r > 1 || s < 0 || s > 1)return false;
+            if (r < 0 || r > 1 || s < 0 || s > 1) return false;
 
             return true;
         }

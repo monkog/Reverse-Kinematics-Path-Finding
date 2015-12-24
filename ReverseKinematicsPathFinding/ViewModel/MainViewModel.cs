@@ -116,9 +116,9 @@ namespace ReverseKinematicsPathFinding.ViewModel
             Obstacles = new ObservableCollection<Obstacle>();
             Robot = new Robot(Width, Height);
 
-            ClearConfigurationData();
             _timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 50) };
             _timer.Tick += _timer_Tick;
+            ClearConfigurationData();
         }
 
         #endregion Constructors
@@ -130,6 +130,11 @@ namespace ReverseKinematicsPathFinding.ViewModel
             ConfigurationSpaceImage = new Bitmap(360, 360);
             ReachableSpaceImage = new Bitmap(360, 360);
             _floodConfigurationSpace = new int[360, 360];
+
+            _timer.Stop();
+            Robot.AnimationFirstPosition = Robot.ZeroPosition;
+            Robot.AnimationSecondPosition = Robot.ZeroPosition;
+            _configurations = null;
         }
 
         private List<Tuple<int, int>> ReversePathFinding(Tuple<int, int> startConfiguration, Tuple<int, int> endConfiguration)
@@ -255,8 +260,8 @@ namespace ReverseKinematicsPathFinding.ViewModel
             var p1 = Robot.CalculateFirstPosition(currentPosition.Item1 * Math.PI / 180.0);
             var p2 = Robot.CalculateSecondPosition(p1, currentPosition.Item1 * Math.PI / 180.0, currentPosition.Item2 * Math.PI / 180.0);
 
-            Robot.FirstPosition = p1;
-            Robot.SecondPosition = p2;
+            Robot.AnimationFirstPosition = p1;
+            Robot.AnimationSecondPosition = p2;
         }
 
         private void CalculateConfiguration()

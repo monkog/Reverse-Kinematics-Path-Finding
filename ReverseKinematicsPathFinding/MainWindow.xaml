@@ -100,6 +100,11 @@
                   X2="{Binding Robot.ThirdPosition.X}" Y2="{Binding Robot.ThirdPosition.Y}"/>
             <Line X1="{Binding Robot.ThirdPosition.X}" Y1="{Binding Robot.ThirdPosition.Y}" 
                   X2="{Binding Robot.SecondPosition.X}" Y2="{Binding Robot.SecondPosition.Y}"/>
+            
+            <Line X1="{Binding Robot.ZeroPosition.X}" Y1="{Binding Robot.ZeroPosition.Y}" 
+                  X2="{Binding Robot.AnimationFirstPosition.X}" Y2="{Binding Robot.AnimationFirstPosition.Y}" Stroke="Coral"/>
+            <Line X1="{Binding Robot.AnimationFirstPosition.X}" Y1="{Binding Robot.AnimationFirstPosition.Y}" 
+                  X2="{Binding Robot.AnimationSecondPosition.X}" Y2="{Binding Robot.AnimationSecondPosition.Y}" Stroke="Coral"/>
             <Ellipse Canvas.Left="{Binding Robot.DestinationPosition.X}" Canvas.Top="{Binding Robot.DestinationPosition.Y}"
                      Width="10" Height="10" Fill="HotPink"/>
         </Canvas>
