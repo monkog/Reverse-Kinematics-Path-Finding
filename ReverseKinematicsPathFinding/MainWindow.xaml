@@ -7,7 +7,7 @@
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:helpers="clr-namespace:ReverseKinematicsPathFinding.Helpers"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525" WindowState="Maximized">
+        Title="Reverse Kinematics" Height="350" Width="525" WindowState="Maximized">
     <Window.DataContext>
         <viewModel:MainViewModel/>
     </Window.DataContext>
@@ -33,7 +33,7 @@
         </Style>
         
         <helpers:BitmapToBitmapImageConverter x:Key="BitmapToBitmapImageConverter"/>
-        <helpers:BoolToColourConverter x:Key="BoolToColourConverter"/>
+		<helpers:BoolToColorConverter x:Key="BoolToColorConverter"/>
         <helpers:MoveToCenterConverter x:Key="MoveToCenterConverter"/>
     </Window.Resources>
 
@@ -88,7 +88,7 @@
                 </ItemsControl.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Rectangle Width="{Binding Size.X}" Height="{Binding Size.Y}" Fill="LightGray" StrokeThickness="2" Stroke="{Binding IsSelected, Converter={StaticResource BoolToColourConverter}}"/>
+						<Rectangle Width="{Binding Size.X}" Height="{Binding Size.Y}" Fill="LightGray" StrokeThickness="2" Stroke="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

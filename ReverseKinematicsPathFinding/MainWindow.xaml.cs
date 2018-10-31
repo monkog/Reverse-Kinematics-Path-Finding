@@ -1,7 +1,7 @@
-﻿namespace ReverseKinematicsPathFinding
-{
-    using ReverseKinematicsPathFinding.ViewModel;
+﻿using ReverseKinematicsPathFinding.ViewModel;
 
+namespace ReverseKinematicsPathFinding
+{
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>

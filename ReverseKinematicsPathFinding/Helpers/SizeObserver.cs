@@ -119,4 +119,3 @@ namespace ReverseKinematicsPathFinding.Helpers
         #endregion Private Static Methods
     }
 }
-

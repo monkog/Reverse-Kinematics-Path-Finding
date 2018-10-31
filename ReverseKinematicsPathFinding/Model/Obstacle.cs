@@ -1,22 +1,15 @@
-﻿namespace ReverseKinematicsPathFinding.Model
+﻿using System.Windows;
+using ReverseKinematicsPathFinding.ViewModel;
+
+namespace ReverseKinematicsPathFinding.Model
 {
-    using System.Windows;
-
-    using ReverseKinematicsPathFinding.ViewModel;
-
     public class Obstacle : ViewModelBase
     {
-        #region Private Members
-
         private Point _position;
         private Point _size;
 
         private bool _isSelected;
-
-        #endregion Private Members
-
-        #region Public Properties
-
+		
         /// <summary>
         /// Position of the obstacle.
         /// </summary>
@@ -27,7 +20,7 @@
             {
                 if (_position == value) return;
                 _position = value;
-                OnPropertyChanged("Position");
+                OnPropertyChanged();
             }
         }
 
@@ -41,7 +34,7 @@
             {
                 if (_size == value) return;
                 _size = value;
-                OnPropertyChanged("Size");
+                OnPropertyChanged();
             }
         }
 
@@ -55,24 +48,16 @@
             {
                 if (_isSelected == value) return;
                 _isSelected = value;
-                OnPropertyChanged("IsSelected");
+                OnPropertyChanged();
             }
         }
-
-        #endregion Public Properties
-
-        #region Constructors
-
+		
         public Obstacle()
         {
             Position = new Point();
             Size = new Point();
             IsSelected = false;
         }
-
-        #endregion Constructors
-
-        #region Public Methods
 
         /// <summary>
         /// Checks if the given point is inside the obstacle.
@@ -84,7 +69,5 @@
             return Position.X <= p.X && Position.X + Size.X >= p.X &&
                 Position.Y <= p.Y && Position.Y + Size.Y >= p.Y;
         }
-
-        #endregion Public Methods
     }
 }

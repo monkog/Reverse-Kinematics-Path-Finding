@@ -60,7 +60,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Helpers\BitmapToBitmapImageConverter.cs" />
-    <Compile Include="Helpers\BoolToColourConverter.cs" />
+    <Compile Include="Helpers\BoolToColorConverter.cs" />
     <Compile Include="Helpers\MoveToCenterConverter.cs" />
     <Compile Include="Model\Obstacle.cs" />
     <Compile Include="Model\Robot.cs" />
