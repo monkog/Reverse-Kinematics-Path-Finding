@@ -6,6 +6,7 @@ namespace ReverseKinematicsPathFinding.Model
     public class Obstacle : ViewModelBase
     {
         private Point _position;
+
         private Point _size;
 
         private bool _isSelected;
@@ -16,7 +17,7 @@ namespace ReverseKinematicsPathFinding.Model
         public Point Position
         {
             get { return _position; }
-            set
+            private set
             {
                 if (_position == value) return;
                 _position = value;
@@ -30,7 +31,7 @@ namespace ReverseKinematicsPathFinding.Model
         public Point Size
         {
             get { return _size; }
-            set
+            private set
             {
                 if (_size == value) return;
                 _size = value;
@@ -52,10 +53,10 @@ namespace ReverseKinematicsPathFinding.Model
             }
         }
 		
-        public Obstacle()
+        public Obstacle(Point position, Point size)
         {
-            Position = new Point();
-            Size = new Point();
+            Position = position;
+            Size = size;
             IsSelected = false;
         }
 
@@ -69,5 +70,24 @@ namespace ReverseKinematicsPathFinding.Model
             return Position.X <= p.X && Position.X + Size.X >= p.X &&
                 Position.Y <= p.Y && Position.Y + Size.Y >= p.Y;
         }
+
+		/// <summary>
+		/// Moves the obstacle by the given delta.
+		/// </summary>
+		/// <param name="delta"></param>
+	    public void Move(Vector delta)
+	    {
+		    Position = Position + delta;
+	    }
+
+		/// <summary>
+		/// Changes the size of the obstacle.
+		/// </summary>
+		/// <param name="width">Width of the obstacle.</param>
+		/// <param name="height">Height of the obstacle.</param>
+		public void Resize(double width, double height)
+	    {
+		    Size = new Point(width, height);
+	    }
     }
 }

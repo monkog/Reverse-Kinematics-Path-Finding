@@ -355,7 +355,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			{
 				if (_currentObstacle != null) return;
 
-				Obstacles.Add(new Obstacle { Position = _mouseDownPosition, Size = new Point(10, 10) });
+				Obstacles.Add(new Obstacle(_mouseDownPosition, new Point(10, 10)));
 			}
 			else if (Mouse.MiddleButton == MouseButtonState.Pressed)
 			{
@@ -379,12 +379,12 @@ namespace ReverseKinematicsPathFinding.ViewModel
 				if (_currentObstacle != null)
 				{
 					var size = Mouse.GetPosition((IInputElement)obj) - _lastMousePosition;
-					_currentObstacle.Size = new Point(_currentObstacle.Size.X + size.X, _currentObstacle.Size.Y + size.Y);
+					_currentObstacle.Resize(_currentObstacle.Size.X + size.X, _currentObstacle.Size.Y + size.Y);
 				}
 				else
 				{
 					var size = Mouse.GetPosition((IInputElement)obj) - _mouseDownPosition;
-					Obstacles.Last().Size = new Point(size.X, size.Y);
+					Obstacles.Last().Resize(size.X, size.Y);
 				}
 			}
 			if (Mouse.RightButton == MouseButtonState.Pressed)
@@ -392,7 +392,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 				if (_currentObstacle != null)
 				{
 					var delta = Mouse.GetPosition((IInputElement)obj) - _lastMousePosition;
-					_currentObstacle.Position = _currentObstacle.Position + delta;
+					_currentObstacle.Move(delta);
 				}
 			}
 
