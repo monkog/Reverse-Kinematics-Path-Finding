@@ -366,9 +366,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 				foreach (var obstacle in Obstacles)
 					obstacle.IsSelected = false;
 
-				_currentObstacle = Obstacles.FirstOrDefault(o => o.Position.X < position.X && o.Position.Y < position.Y
-																 && o.Position.X + o.Size.X > position.X &&
-																 o.Position.Y + o.Size.Y > position.Y);
+				_currentObstacle = Obstacles.FirstOrDefault(o => o.Contains(position));
 				if (_currentObstacle != null) _currentObstacle.IsSelected = true;
 			}
 		}
