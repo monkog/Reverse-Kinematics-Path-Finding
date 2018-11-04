@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -8,11 +9,12 @@ using System.Windows.Media.Imaging;
 
 namespace ReverseKinematicsPathFinding.Helpers
 {
+	[ExcludeFromCodeCoverage]
     public class BitmapToBitmapImageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            BitmapImage bitmapImage = new BitmapImage();
+            var bitmapImage = new BitmapImage();
             using (MemoryStream memory = new MemoryStream())
             {
                 ((Bitmap)value).Save(memory, ImageFormat.Png);
@@ -32,4 +34,3 @@ namespace ReverseKinematicsPathFinding.Helpers
         }
     }
 }
-

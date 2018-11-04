@@ -1,10 +1,12 @@
-﻿using System.Windows;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows;
 
 namespace ReverseKinematicsPathFinding.Helpers
 {
     /// <summary>
     /// Enables binding to the readonly properties
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class SizeObserver
     {
         #region Dependency Properties

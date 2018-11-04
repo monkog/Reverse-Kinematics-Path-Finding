@@ -9,8 +9,8 @@ namespace ReverseKinematicsPathFinding.Helpers
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             double width = double.Parse(value.ToString());
-            double delta = double.Parse(parameter.ToString());
-            return delta - width / 2.0;
+            double offset = double.Parse(parameter.ToString());
+            return offset - width / 2.0;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
