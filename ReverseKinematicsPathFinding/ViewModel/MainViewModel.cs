@@ -39,7 +39,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 		private int[,] _floodConfigurationSpace;
 		private List<Tuple<int, int>> _configurations;
 
-		private DispatcherTimer _timer;
+		private readonly DispatcherTimer _timer;
 		private DateTime _timerStart;
 
 		private Obstacle _currentObstacle;
@@ -105,7 +105,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 		public ICommand MouseUpCommand { get { return _mouseUpCommand ?? (_mouseUpCommand = new DelegateCommand(MouseUp)); } }
 
-		public ICommand DeleteCommand { get { return _deleteCommand ?? (_deleteCommand = new DelegateCommand(Delete)); } }
+		public ICommand DeleteCommand { get { return _deleteCommand ?? (_deleteCommand = new DelegateCommand(RemoveObstacle)); } }
 
 		#endregion Public Members
 
@@ -181,7 +181,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			if (double.IsNaN(startAngles.X) || double.IsNaN(startAngles.Y) || double.IsNaN(endAngles.X) ||
 				double.IsNaN(endAngles.Y))
 			{
-				MessageBox.Show(string.Format("Cannot calculate {0} angles configuration", isFirstArm ? "first" : "second"));
+				MessageBox.Show($"Cannot calculate {(isFirstArm ? "first" : "second")} angles configuration");
 				startConfiguration = endConfiguration = null;
 				return false;
 			}
@@ -202,52 +202,51 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 		private bool FloodFill(int startX, int startY, int endX, int endY, int sequenceNumber, bool isFirstArm)
 		{
-			var neighbours = new List<Tuple<int, int>>();
-			neighbours.Add(new Tuple<int, int>(startX, startY));
+			var neighbors = new List<Tuple<int, int>> {new Tuple<int, int>(startX, startY)};
 
 			do
 			{
 				sequenceNumber++;
 				var color = Math.Min(255, sequenceNumber + 1);
 
-				var newNeighbours = new List<Tuple<int, int>>();
-				foreach (var neighbour in neighbours)
+				var newNeighbors = new List<Tuple<int, int>>();
+				foreach (var neighbor in neighbors)
 				{
-					startX = neighbour.Item1;
-					startY = neighbour.Item2;
+					startX = neighbor.Item1;
+					startY = neighbor.Item2;
 					if (_floodConfigurationSpace[(startX - 1 + 360) % 360, startY] == 0)
 					{
 						_floodConfigurationSpace[(startX - 1 + 360) % 360, startY] = sequenceNumber;
 						ConfigurationSpaceImage.SetPixel((startX - 1 + 360) % 360, startY, Color.FromArgb(color, color, color));
-						newNeighbours.Add(new Tuple<int, int>((startX - 1 + 360) % 360, startY));
+						newNeighbors.Add(new Tuple<int, int>((startX - 1 + 360) % 360, startY));
 						if ((startX - 1 + 360) % 360 == endX && startY == endY) return true;
 					}
 					if (_floodConfigurationSpace[startX, (startY + 1) % 360] == 0)
 					{
 						_floodConfigurationSpace[startX, (startY + 1) % 360] = sequenceNumber;
 						ConfigurationSpaceImage.SetPixel(startX, (startY + 1) % 360, Color.FromArgb(color, color, color));
-						newNeighbours.Add(new Tuple<int, int>(startX, (startY + 1) % 360));
+						newNeighbors.Add(new Tuple<int, int>(startX, (startY + 1) % 360));
 						if (startX == endX && (startY + 1) % 360 == endY) return true;
 					}
 					if (_floodConfigurationSpace[startX, (startY - 1 + 360) % 360] == 0)
 					{
 						_floodConfigurationSpace[startX, (startY - 1 + 360) % 360] = sequenceNumber;
 						ConfigurationSpaceImage.SetPixel(startX, (startY - 1 + 360) % 360, Color.FromArgb(color, color, color));
-						newNeighbours.Add(new Tuple<int, int>(startX, (startY - 1 + 360) % 360));
+						newNeighbors.Add(new Tuple<int, int>(startX, (startY - 1 + 360) % 360));
 						if (startX == endX && (startY - 1 + 360) % 360 == endY) return true;
 					}
 					if (_floodConfigurationSpace[(startX + 1) % 360, startY] == 0)
 					{
 						_floodConfigurationSpace[(startX + 1) % 360, startY] = sequenceNumber;
 						ConfigurationSpaceImage.SetPixel((startX + 1) % 360, startY, Color.FromArgb(color, color, color));
-						newNeighbours.Add(new Tuple<int, int>((startX + 1) % 360, startY));
+						newNeighbors.Add(new Tuple<int, int>((startX + 1) % 360, startY));
 						if ((startX + 1) % 360 == endX && startY == endY) return true;
 					}
 				}
-				neighbours = newNeighbours;
-			} while (neighbours.Any());
+				neighbors = newNeighbors;
+			} while (neighbors.Any());
 
-			MessageBox.Show(string.Format("Cannot calculate path for {0} arm", isFirstArm ? "first" : "second"));
+			MessageBox.Show($"Cannot calculate path for {(isFirstArm ? "first" : "second")} arm");
 			return false;
 		}
 
@@ -404,13 +403,12 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			_isMouseDown = false;
 		}
 
-		private void Delete(object obj)
+		private void RemoveObstacle(object obj)
 		{
-			if (_currentObstacle != null)
-			{
-				Obstacles.Remove(_currentObstacle);
-				_currentObstacle = null;
-			}
+			if (_currentObstacle == null) return;
+
+			Obstacles.Remove(_currentObstacle);
+			_currentObstacle = null;
 		}
 
 		private void CalculatePath(object obj)
@@ -418,18 +416,15 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			ClearConfigurationData();
 			CalculateConfiguration();
 
-			Tuple<int, int> startConfiguration, endConfiguration;
-			if (CalculateReachableConfiguration(out startConfiguration, out endConfiguration))
+			if (!CalculateReachableConfiguration(out var startConfiguration, out var endConfiguration)) return;
+			_configurations = ReversePathFinding(startConfiguration, endConfiguration);
+			foreach (var configuration in _configurations)
 			{
-				_configurations = ReversePathFinding(startConfiguration, endConfiguration);
-				foreach (var configuration in _configurations)
-				{
-					for (int i = 0; i < 2; i++)
-						for (int j = 0; j < 2; j++)
-							ConfigurationSpaceImage.SetPixel((configuration.Item1 + i + 360) % 360, (configuration.Item2 + j + 360) % 360, Color.Goldenrod);
-				}
-				OnPropertyChanged(nameof(ConfigurationSpaceImage));
+				for (int i = 0; i < 2; i++)
+				for (int j = 0; j < 2; j++)
+					ConfigurationSpaceImage.SetPixel((configuration.Item1 + i + 360) % 360, (configuration.Item2 + j + 360) % 360, Color.Goldenrod);
 			}
+			OnPropertyChanged(nameof(ConfigurationSpaceImage));
 		}
 
 		private void StartAnimation(object obj)
