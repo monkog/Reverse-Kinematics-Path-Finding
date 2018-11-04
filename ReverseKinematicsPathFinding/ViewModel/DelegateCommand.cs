@@ -23,12 +23,12 @@ namespace ReverseKinematicsPathFinding.ViewModel
             _canExecute = canExecute;
         }
 
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object parameter = null)
         {
 	        return _canExecute == null || _canExecute(parameter);
         }
 
-        public void Execute(object parameter)
+        public void Execute(object parameter = null)
         {
             _execute(parameter);
         }
