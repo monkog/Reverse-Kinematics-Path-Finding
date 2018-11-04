@@ -6,104 +6,66 @@ namespace ReverseKinematicsPathFinding.Model
 {
 	public class Robot : ViewModelBase
 	{
-		#region Private Members
+		private Arm _firstArm;
+		private Arm _secondArm;
 
-		private Point _firstPosition;
-		private Point _secondPosition;
-		private Point _zeroPosition;
-		private Point _thirdPosition;
+		private Arm _animationArm;
 
-		private double _l1;
-		private double _l2;
-
-		private Point _destinationPosition;
-		private Point _animationSecondPosition;
-		private Point _animationFirstPosition;
-
-		#endregion Private Members
-
-		#region Public Members
-
+		private Point _position;
+		private Point _destination;
+		
 		/// <summary>
-		/// Position of the beginning of the robot's first arm.
+		/// The robot's position.
 		/// </summary>
-		public Point ZeroPosition
+		public Point Position
 		{
-			get { return _zeroPosition; }
+			get { return _position; }
 			set
 			{
-				if (_zeroPosition == value) return;
-				_zeroPosition = value;
+				if (_position == value) return;
+				_position = value;
 				OnPropertyChanged();
 			}
 		}
 
 		/// <summary>
-		/// First position of the robot's first arm.
+		/// The robot's first arm.
 		/// </summary>
-		public Point FirstPosition
+		public Arm FirstArm
 		{
-			get { return _firstPosition; }
+			get { return _firstArm; }
 			set
 			{
-				if (_firstPosition == value) return;
-				_firstPosition = value;
+				if (_firstArm == value) return;
+				_firstArm = value;
 				OnPropertyChanged();
 			}
 		}
 
 		/// <summary>
-		/// Second position of the robot's first arm.
+		/// The robot's second arm.
 		/// </summary>
-		public Point SecondPosition
+		public Arm SecondArm
 		{
-			get { return _secondPosition; }
+			get { return _secondArm; }
 			set
 			{
-				if (_secondPosition == value) return;
-				_secondPosition = value;
+				if (_secondArm == value) return;
+				_secondArm = value;
 				OnPropertyChanged();
 			}
 		}
 
 		/// <summary>
-		/// First position of the robot's second arm.
+		/// Animation arm.
 		/// </summary>
-		public Point ThirdPosition
+		public Arm AnimationArm
 		{
-			get { return _thirdPosition; }
+			get { return _animationArm; }
 			set
 			{
-				if (_thirdPosition == value) return;
-				_thirdPosition = value;
-				OnPropertyChanged();
-			}
-		}
-
-		/// <summary>
-		/// Second position of the robot's animation arm.
-		/// </summary>
-		public Point AnimationSecondPosition
-		{
-			get { return _animationSecondPosition; }
-			set
-			{
-				if (_animationSecondPosition == value) return;
-				_animationSecondPosition = value;
-				OnPropertyChanged();
-			}
-		}
-
-		/// <summary>
-		/// First position of the robot's animation arm.
-		/// </summary>
-		public Point AnimationFirstPosition
-		{
-			get { return _animationFirstPosition; }
-			set
-			{
-				if (_animationFirstPosition == value) return;
-				_animationFirstPosition = value;
+				if (_animationArm == value) return;
+				_animationArm = value;
 				OnPropertyChanged();
 			}
 		}
@@ -111,93 +73,30 @@ namespace ReverseKinematicsPathFinding.Model
 		/// <summary>
 		/// Destination position of the robot's second arm.
 		/// </summary>
-		public Point DestinationPosition
+		public Point Destination
 		{
-			get { return _destinationPosition; }
+			get { return _destination; }
 			set
 			{
-				if (_destinationPosition == value) return;
-				_destinationPosition = value;
+				if (_destination == value) return;
+				_destination = value;
 				OnPropertyChanged();
 			}
 		}
-
-		/// <summary>
-		/// Length of the robot's first arm.
-		/// </summary>
-		public double L1
-		{
-			get { return _l1; }
-			set
-			{
-				if (_l1 == value) return;
-				_l1 = value;
-				OnPropertyChanged();
-			}
-		}
-
-		/// <summary>
-		/// Length of the robot's second arm.
-		/// </summary>
-		public double L2
-		{
-			get { return _l2; }
-			set
-			{
-				if (_l2 == value) return;
-				_l2 = value;
-				OnPropertyChanged();
-				OnPropertyChanged(nameof(ArmsMaxRange));
-				OnPropertyChanged(nameof(ArmsMinRange));
-			}
-		}
-
-		/// <summary>
-		/// Gets the maximum range of arms.
-		/// </summary>
-		public double ArmsMaxRange
-		{
-			get { return (L1 + L2) * 2; }
-		}
-
-		/// <summary>
-		/// Gets the minimum range of arms.
-		/// </summary>
-		public double ArmsMinRange
-		{
-			get { return 2 * Math.Abs(L2 - L1); }
-		}
-
-		#endregion Public Members
-
+		
 		#region Constructors
 
 		public Robot(double width, double height)
 		{
-			AnimationFirstPosition = AnimationSecondPosition = ThirdPosition = SecondPosition = FirstPosition = ZeroPosition =
-				new Point(width / 2.0, height / 2.0);
-			DestinationPosition = ZeroPosition;
-			L1 = L2 = double.NaN;
+			_position = new Point(width / 2.0, height / 2.0);
+			FirstArm = new Arm(_position);
+			SecondArm = new Arm(_position);
+			Destination = _position;
 		}
 
 		#endregion Constructors
 
 		#region Public Methods
-
-		public void RecalculateRobot()
-		{
-			if (!double.IsNaN(L1))
-				L2 = (SecondPosition - FirstPosition).Length;
-			L1 = (FirstPosition - ZeroPosition).Length;
-
-			if (!double.IsNaN(L2))
-			{
-				var delta = SecondPosition - ZeroPosition;
-				var angles = CalculateReverseKinematicsSecondPosition(delta.X, delta.Y);
-
-				ThirdPosition = CalculateFirstPosition(angles.X);
-			}
-		}
 
 		public bool IntersectsRectangle(Point p1, Point p2, Obstacle r)
 		{
@@ -210,26 +109,26 @@ namespace ReverseKinematicsPathFinding.Model
 
 		public Point CalculateFirstPosition(double alpha)
 		{
-			return new Point(ZeroPosition.X + (L1 * Math.Cos(alpha)), ZeroPosition.Y + (L1 * Math.Sin(alpha)));
+			return new Point(Position.X + (FirstArm.FirstPartLength * Math.Cos(alpha)), Position.Y + (FirstArm.FirstPartLength * Math.Sin(alpha)));
 		}
 
 		public Point CalculateSecondPosition(Point firstPosition, double alpha, double beta)
 		{
-			return new Point(firstPosition.X + (L2 * (((Math.Cos(beta) * Math.Cos(alpha))) + (Math.Sin(beta) * Math.Sin(alpha)))),
-				firstPosition.Y + (L2 * (-(Math.Sin(beta) * Math.Cos(alpha)) + (Math.Cos(beta) * Math.Sin(alpha)))));
+			return new Point(firstPosition.X + (FirstArm.SecondPartLength * (((Math.Cos(beta) * Math.Cos(alpha))) + (Math.Sin(beta) * Math.Sin(alpha)))),
+				firstPosition.Y + (FirstArm.SecondPartLength * (-(Math.Sin(beta) * Math.Cos(alpha)) + (Math.Cos(beta) * Math.Sin(alpha)))));
 		}
 
 		public Point CalculateReverseKinematicsFirstPosition(double x, double y)
 		{
-			var beta = -Math.Acos((x * x + y * y - L1 * L1 - L2 * L2) / (2 * L1 * L2));
-			var alpha = Math.Asin((L2 * Math.Sin(beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
+			var beta = -Math.Acos((x * x + y * y - FirstArm.FirstPartLength * FirstArm.FirstPartLength - FirstArm.SecondPartLength * FirstArm.SecondPartLength) / (2 * FirstArm.FirstPartLength * FirstArm.SecondPartLength));
+			var alpha = Math.Asin((FirstArm.SecondPartLength * Math.Sin(beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
 			return new Point(alpha, beta);
 		}
 
 		public Point CalculateReverseKinematicsSecondPosition(double x, double y)
 		{
-			var beta = Math.Acos((x * x + y * y - L1 * L1 - L2 * L2) / (2 * L1 * L2));
-			var alpha = -Math.Asin((L2 * Math.Sin(-beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
+			var beta = Math.Acos((x * x + y * y - FirstArm.FirstPartLength * FirstArm.FirstPartLength - FirstArm.SecondPartLength * FirstArm.SecondPartLength) / (2 * FirstArm.FirstPartLength * FirstArm.SecondPartLength));
+			var alpha = -Math.Asin((FirstArm.SecondPartLength * Math.Sin(-beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
 			return new Point(alpha, beta);
 		}
 

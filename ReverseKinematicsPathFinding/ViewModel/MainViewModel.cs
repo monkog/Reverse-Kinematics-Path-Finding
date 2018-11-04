@@ -117,7 +117,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			Robot = new Robot(Width, Height);
 
 			_timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 50) };
-			_timer.Tick += _timer_Tick;
+			_timer.Tick += TimerTick;
 			ClearConfigurationData();
 		}
 
@@ -132,8 +132,6 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			_floodConfigurationSpace = new int[360, 360];
 
 			_timer.Stop();
-			Robot.AnimationFirstPosition = Robot.ZeroPosition;
-			Robot.AnimationSecondPosition = Robot.ZeroPosition;
 			_configurations = null;
 		}
 
@@ -172,11 +170,11 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 		private bool FindConfigurationForSingleArm(out Tuple<int, int> startConfiguration, out Tuple<int, int> endConfiguration, bool isFirstArm)
 		{
-			var startAngles = isFirstArm ? Robot.CalculateReverseKinematicsFirstPosition(Robot.SecondPosition.X - Robot.ZeroPosition.X, Robot.SecondPosition.Y - Robot.ZeroPosition.Y)
-				: Robot.CalculateReverseKinematicsSecondPosition(Robot.SecondPosition.X - Robot.ZeroPosition.X, Robot.SecondPosition.Y - Robot.ZeroPosition.Y);
+			var startAngles = isFirstArm ? Robot.CalculateReverseKinematicsFirstPosition(Robot.FirstArm.EndPosition.X - Robot.Position.X, Robot.FirstArm.EndPosition.Y - Robot.Position.Y)
+				: Robot.CalculateReverseKinematicsSecondPosition(Robot.FirstArm.EndPosition.X - Robot.Position.X, Robot.FirstArm.EndPosition.Y - Robot.Position.Y);
 
-			var endAngles = isFirstArm ? Robot.CalculateReverseKinematicsFirstPosition(Robot.DestinationPosition.X - Robot.ZeroPosition.X, Robot.DestinationPosition.Y - Robot.ZeroPosition.Y)
-				: Robot.CalculateReverseKinematicsSecondPosition(Robot.DestinationPosition.X - Robot.ZeroPosition.X, Robot.DestinationPosition.Y - Robot.ZeroPosition.Y);
+			var endAngles = isFirstArm ? Robot.CalculateReverseKinematicsFirstPosition(Robot.Destination.X - Robot.Position.X, Robot.Destination.Y - Robot.Position.Y)
+				: Robot.CalculateReverseKinematicsSecondPosition(Robot.Destination.X - Robot.Position.X, Robot.Destination.Y - Robot.Position.Y);
 
 			if (double.IsNaN(startAngles.X) || double.IsNaN(startAngles.Y) || double.IsNaN(endAngles.X) ||
 				double.IsNaN(endAngles.Y))
@@ -202,7 +200,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 		private bool FloodFill(int startX, int startY, int endX, int endY, int sequenceNumber, bool isFirstArm)
 		{
-			var neighbors = new List<Tuple<int, int>> {new Tuple<int, int>(startX, startY)};
+			var neighbors = new List<Tuple<int, int>> { new Tuple<int, int>(startX, startY) };
 
 			do
 			{
@@ -250,7 +248,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			return false;
 		}
 
-		void _timer_Tick(object sender, EventArgs e)
+		private void TimerTick(object sender, EventArgs e)
 		{
 			var timeDelta = (int)((DateTime.Now - _timerStart).TotalMilliseconds / 50);
 			if (timeDelta >= _configurations.Count) return;
@@ -259,8 +257,8 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			var p1 = Robot.CalculateFirstPosition(currentPosition.Item1 * Math.PI / 180.0);
 			var p2 = Robot.CalculateSecondPosition(p1, currentPosition.Item1 * Math.PI / 180.0, currentPosition.Item2 * Math.PI / 180.0);
 
-			Robot.AnimationFirstPosition = p1;
-			Robot.AnimationSecondPosition = p2;
+			Robot.AnimationArm.SetJointPosition(p1);
+			Robot.AnimationArm.SetEndPosition(p2);
 		}
 
 		private void CalculateConfiguration()
@@ -276,7 +274,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 					var p2 = Robot.CalculateSecondPosition(p1, alpha, beta);
 					foreach (var obstacle in Obstacles)
 					{
-						if (Robot.IntersectsRectangle(Robot.ZeroPosition, p1, obstacle))
+						if (Robot.IntersectsRectangle(Robot.Position, p1, obstacle))
 							intersectsObstacle = true;
 						if (Robot.IntersectsRectangle(p1, p2, obstacle))
 							intersectsObstacle = true;
@@ -304,16 +302,19 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 			if (double.IsNaN(angles.X) || double.IsNaN(angles.Y)) return;
 
+			var p1 = Robot.CalculateFirstPosition(angles.X);
+			var p2 = Robot.CalculateSecondPosition(p1, angles.X, angles.Y);
+
 			if (isFirstSolution)
 			{
-				var p1 = Robot.CalculateFirstPosition(angles.X);
-				var p2 = Robot.CalculateSecondPosition(p1, angles.X, angles.Y);
-
-				Robot.FirstPosition = p1;
-				Robot.SecondPosition = p2;
+				Robot.FirstArm.SetJointPosition(p1);
+				Robot.FirstArm.SetEndPosition(p2);
 			}
 			else
-				Robot.ThirdPosition = Robot.CalculateFirstPosition(angles.X);
+			{
+				Robot.SecondArm.SetJointPosition(p1);
+				Robot.SecondArm.SetEndPosition(p2);
+			}
 		}
 
 		private void SetRobotArms()
@@ -321,19 +322,23 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			if (_currentObstacle != null) return;
 			if (Keyboard.IsKeyDown(Key.LeftShift))
 			{
-				Robot.DestinationPosition = _mouseDownPosition;
+				Robot.Destination = _mouseDownPosition;
 				return;
 			}
 
-			if (double.IsNaN(Robot.L1))
+			if (Robot.FirstArm.JointPosition == Robot.FirstArm.StartPosition)
 			{
-				Robot.FirstPosition = _mouseDownPosition;
-				Robot.RecalculateRobot();
+				Robot.FirstArm.SetJointPosition(_mouseDownPosition);
 			}
-			else if (double.IsNaN(Robot.L2))
+			else if (Robot.FirstArm.EndPosition == Robot.FirstArm.StartPosition)
 			{
-				Robot.SecondPosition = _mouseDownPosition;
-				Robot.RecalculateRobot();
+				Robot.FirstArm.SetEndPosition(_mouseDownPosition);
+				Robot.SecondArm.SetEndPosition(_mouseDownPosition);
+				var delta = Robot.FirstArm.JointPosition - Robot.FirstArm.StartPosition;
+				var angles = Robot.CalculateReverseKinematicsSecondPosition(delta.X, delta.Y);
+				var p1 = Robot.CalculateFirstPosition(angles.X);
+				var p2 = Robot.CalculateSecondPosition(p1, angles.X, angles.Y);
+				Robot.SecondArm.SetJointPosition(p2);
 			}
 			else
 			{
@@ -421,8 +426,8 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			foreach (var configuration in _configurations)
 			{
 				for (int i = 0; i < 2; i++)
-				for (int j = 0; j < 2; j++)
-					ConfigurationSpaceImage.SetPixel((configuration.Item1 + i + 360) % 360, (configuration.Item2 + j + 360) % 360, Color.Goldenrod);
+					for (int j = 0; j < 2; j++)
+						ConfigurationSpaceImage.SetPixel((configuration.Item1 + i + 360) % 360, (configuration.Item2 + j + 360) % 360, Color.Goldenrod);
 			}
 			OnPropertyChanged(nameof(ConfigurationSpaceImage));
 		}
@@ -432,6 +437,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			if (_configurations == null) return;
 
 			_timerStart = DateTime.Now;
+			Robot.AnimationArm = new Arm(Robot.Position);
 			_timer.Start();
 		}
 

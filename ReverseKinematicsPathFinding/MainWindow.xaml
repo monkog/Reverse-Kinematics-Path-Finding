@@ -68,12 +68,12 @@
                     <i:InvokeCommandAction Command="{Binding MouseUpCommand}" CommandParameter="{Binding ElementName=DemoCanvas}"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
-            <Ellipse Width="{Binding Robot.ArmsMaxRange}" Height="{Binding Robot.ArmsMaxRange}" Fill="DeepPink" Opacity="0.2"
-                     Canvas.Left="{Binding Robot.ArmsMaxRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=600}"
-                     Canvas.Top="{Binding Robot.ArmsMaxRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=418}"/>
-            <Ellipse Width="{Binding Robot.ArmsMinRange}" Height="{Binding Robot.ArmsMinRange}" Fill="Black"
-                     Canvas.Left="{Binding Robot.ArmsMinRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=600}"
-                     Canvas.Top="{Binding Robot.ArmsMinRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=418}"/>
+			<Ellipse Width="{Binding Robot.FirstArm.MaxRange}" Height="{Binding Robot.FirstArm.MaxRange}" Fill="DeepPink" Opacity="0.2"
+                     Canvas.Left="{Binding Robot.FirstArm.MaxRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=600}"
+                     Canvas.Top="{Binding Robot.FirstArm.MaxRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=418}"/>
+			<Ellipse Width="{Binding Robot.FirstArm.MinRange}" Height="{Binding Robot.FirstArm.MinRange}" Fill="Black"
+                     Canvas.Left="{Binding Robot.FirstArm.MinRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=600}"
+                     Canvas.Top="{Binding Robot.FirstArm.MinRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=418}"/>
             <ItemsControl ItemsSource="{Binding Obstacles}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -92,20 +92,20 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Line X1="{Binding Robot.ZeroPosition.X}" Y1="{Binding Robot.ZeroPosition.Y}" 
-                  X2="{Binding Robot.FirstPosition.X}" Y2="{Binding Robot.FirstPosition.Y}"/>
-            <Line X1="{Binding Robot.FirstPosition.X}" Y1="{Binding Robot.FirstPosition.Y}" 
-                  X2="{Binding Robot.SecondPosition.X}" Y2="{Binding Robot.SecondPosition.Y}"/>
-            <Line X1="{Binding Robot.ZeroPosition.X}" Y1="{Binding Robot.ZeroPosition.Y}" 
-                  X2="{Binding Robot.ThirdPosition.X}" Y2="{Binding Robot.ThirdPosition.Y}"/>
-            <Line X1="{Binding Robot.ThirdPosition.X}" Y1="{Binding Robot.ThirdPosition.Y}" 
-                  X2="{Binding Robot.SecondPosition.X}" Y2="{Binding Robot.SecondPosition.Y}"/>
-            
-            <Line X1="{Binding Robot.ZeroPosition.X}" Y1="{Binding Robot.ZeroPosition.Y}" 
-                  X2="{Binding Robot.AnimationFirstPosition.X}" Y2="{Binding Robot.AnimationFirstPosition.Y}" Stroke="Coral"/>
-            <Line X1="{Binding Robot.AnimationFirstPosition.X}" Y1="{Binding Robot.AnimationFirstPosition.Y}" 
-                  X2="{Binding Robot.AnimationSecondPosition.X}" Y2="{Binding Robot.AnimationSecondPosition.Y}" Stroke="Coral"/>
-            <Ellipse Canvas.Left="{Binding Robot.DestinationPosition.X}" Canvas.Top="{Binding Robot.DestinationPosition.Y}"
+			<Line X1="{Binding Robot.FirstArm.StartPosition.X}" Y1="{Binding Robot.FirstArm.StartPosition.Y}" 
+                  X2="{Binding Robot.FirstArm.JointPosition.X}" Y2="{Binding Robot.FirstArm.JointPosition.Y}"/>
+			<Line X1="{Binding Robot.FirstArm.JointPosition.X}" Y1="{Binding Robot.FirstArm.JointPosition.Y}" 
+                  X2="{Binding Robot.FirstArm.EndPosition.X}" Y2="{Binding Robot.FirstArm.EndPosition.Y}"/>
+			<Line X1="{Binding Robot.SecondArm.StartPosition.X}" Y1="{Binding Robot.SecondArm.StartPosition.Y}" 
+                  X2="{Binding Robot.SecondArm.JointPosition.X}" Y2="{Binding Robot.SecondArm.JointPosition.Y}"/>
+			<Line X1="{Binding Robot.SecondArm.JointPosition.X}" Y1="{Binding Robot.SecondArm.JointPosition.Y}" 
+                  X2="{Binding Robot.SecondArm.EndPosition.X}" Y2="{Binding Robot.SecondArm.EndPosition.Y}"/>
+
+			<Line X1="{Binding Robot.AnimationArm.StartPosition.X}" Y1="{Binding Robot.AnimationArm.StartPosition.Y}" 
+                  X2="{Binding Robot.AnimationArm.JointPosition.X}" Y2="{Binding Robot.AnimationArm.JointPosition.Y}" Stroke="Coral"/>
+			<Line X1="{Binding Robot.AnimationArm.JointPosition.X}" Y1="{Binding Robot.AnimationArm.JointPosition.Y}" 
+                  X2="{Binding Robot.AnimationArm.EndPosition.X}" Y2="{Binding Robot.AnimationArm.EndPosition.Y}" Stroke="Coral"/>
+            <Ellipse Canvas.Left="{Binding Robot.Destination.X}" Canvas.Top="{Binding Robot.Destination.Y}"
                      Width="10" Height="10" Fill="HotPink"/>
         </Canvas>
     </Grid>
