@@ -170,8 +170,8 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 		private bool FindConfigurationForSingleArm(out Tuple<int, int> startConfiguration, out Tuple<int, int> endConfiguration, bool isFirstArm)
 		{
-			var startAngles = isFirstArm ? Robot.CalculateReverseKinematicsFirstPosition(Robot.FirstArm.EndPosition.X - Robot.Position.X, Robot.FirstArm.EndPosition.Y - Robot.Position.Y)
-				: Robot.CalculateReverseKinematicsSecondPosition(Robot.FirstArm.EndPosition.X - Robot.Position.X, Robot.FirstArm.EndPosition.Y - Robot.Position.Y);
+			var startAngles = isFirstArm ? Robot.CalculateReverseKinematicsFirstPosition(Robot.Arm.End.X - Robot.Position.X, Robot.Arm.End.Y - Robot.Position.Y)
+				: Robot.CalculateReverseKinematicsSecondPosition(Robot.Arm.End.X - Robot.Position.X, Robot.Arm.End.Y - Robot.Position.Y);
 
 			var endAngles = isFirstArm ? Robot.CalculateReverseKinematicsFirstPosition(Robot.Destination.X - Robot.Position.X, Robot.Destination.Y - Robot.Position.Y)
 				: Robot.CalculateReverseKinematicsSecondPosition(Robot.Destination.X - Robot.Position.X, Robot.Destination.Y - Robot.Position.Y);
@@ -307,13 +307,12 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 			if (isFirstSolution)
 			{
-				Robot.FirstArm.SetJointPosition(p1);
-				Robot.FirstArm.SetEndPosition(p2);
+				Robot.Arm.SetJointPosition(p1);
+				Robot.Arm.SetEndPosition(p2);
 			}
 			else
 			{
-				Robot.SecondArm.SetJointPosition(p1);
-				Robot.SecondArm.SetEndPosition(p2);
+				Robot.Arm.SetAlternativeJointPosition(p1);
 			}
 		}
 
@@ -326,19 +325,19 @@ namespace ReverseKinematicsPathFinding.ViewModel
 				return;
 			}
 
-			if (Robot.FirstArm.JointPosition == Robot.FirstArm.StartPosition)
+			if (Robot.Arm.Joint == Robot.Arm.Start)
 			{
-				Robot.FirstArm.SetJointPosition(_mouseDownPosition);
+				Robot.Arm.SetJointPosition(_mouseDownPosition);
 			}
-			else if (Robot.FirstArm.EndPosition == Robot.FirstArm.StartPosition)
+			else if (Robot.Arm.End == Robot.Arm.Start)
 			{
-				Robot.FirstArm.SetEndPosition(_mouseDownPosition);
-				Robot.SecondArm.SetEndPosition(_mouseDownPosition);
-				var delta = Robot.FirstArm.JointPosition - Robot.FirstArm.StartPosition;
+				Robot.Arm.SetEndPosition(_mouseDownPosition);
+				Robot.Arm.SetEndPosition(_mouseDownPosition);
+				var delta = Robot.Arm.Joint - Robot.Arm.Start;
 				var angles = Robot.CalculateReverseKinematicsSecondPosition(delta.X, delta.Y);
 				var p1 = Robot.CalculateFirstPosition(angles.X);
 				var p2 = Robot.CalculateSecondPosition(p1, angles.X, angles.Y);
-				Robot.SecondArm.SetJointPosition(p2);
+				Robot.Arm.SetAlternativeJointPosition(p2);
 			}
 			else
 			{

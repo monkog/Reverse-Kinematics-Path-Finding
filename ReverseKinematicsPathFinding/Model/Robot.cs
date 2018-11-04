@@ -6,8 +6,7 @@ namespace ReverseKinematicsPathFinding.Model
 {
 	public class Robot : ViewModelBase
 	{
-		private Arm _firstArm;
-		private Arm _secondArm;
+		private Arm _arm;
 
 		private Arm _animationArm;
 
@@ -31,27 +30,13 @@ namespace ReverseKinematicsPathFinding.Model
 		/// <summary>
 		/// The robot's first arm.
 		/// </summary>
-		public Arm FirstArm
+		public Arm Arm
 		{
-			get { return _firstArm; }
+			get { return _arm; }
 			set
 			{
-				if (_firstArm == value) return;
-				_firstArm = value;
-				OnPropertyChanged();
-			}
-		}
-
-		/// <summary>
-		/// The robot's second arm.
-		/// </summary>
-		public Arm SecondArm
-		{
-			get { return _secondArm; }
-			set
-			{
-				if (_secondArm == value) return;
-				_secondArm = value;
+				if (_arm == value) return;
+				_arm = value;
 				OnPropertyChanged();
 			}
 		}
@@ -89,8 +74,7 @@ namespace ReverseKinematicsPathFinding.Model
 		public Robot(double width, double height)
 		{
 			_position = new Point(width / 2.0, height / 2.0);
-			FirstArm = new Arm(_position);
-			SecondArm = new Arm(_position);
+			Arm = new Arm(_position);
 			Destination = _position;
 		}
 
@@ -109,26 +93,26 @@ namespace ReverseKinematicsPathFinding.Model
 
 		public Point CalculateFirstPosition(double alpha)
 		{
-			return new Point(Position.X + (FirstArm.FirstPartLength * Math.Cos(alpha)), Position.Y + (FirstArm.FirstPartLength * Math.Sin(alpha)));
+			return new Point(Position.X + (Arm.FirstPartLength * Math.Cos(alpha)), Position.Y + (Arm.FirstPartLength * Math.Sin(alpha)));
 		}
 
 		public Point CalculateSecondPosition(Point firstPosition, double alpha, double beta)
 		{
-			return new Point(firstPosition.X + (FirstArm.SecondPartLength * (((Math.Cos(beta) * Math.Cos(alpha))) + (Math.Sin(beta) * Math.Sin(alpha)))),
-				firstPosition.Y + (FirstArm.SecondPartLength * (-(Math.Sin(beta) * Math.Cos(alpha)) + (Math.Cos(beta) * Math.Sin(alpha)))));
+			return new Point(firstPosition.X + (Arm.SecondPartLength * (((Math.Cos(beta) * Math.Cos(alpha))) + (Math.Sin(beta) * Math.Sin(alpha)))),
+				firstPosition.Y + (Arm.SecondPartLength * (-(Math.Sin(beta) * Math.Cos(alpha)) + (Math.Cos(beta) * Math.Sin(alpha)))));
 		}
 
 		public Point CalculateReverseKinematicsFirstPosition(double x, double y)
 		{
-			var beta = -Math.Acos((x * x + y * y - FirstArm.FirstPartLength * FirstArm.FirstPartLength - FirstArm.SecondPartLength * FirstArm.SecondPartLength) / (2 * FirstArm.FirstPartLength * FirstArm.SecondPartLength));
-			var alpha = Math.Asin((FirstArm.SecondPartLength * Math.Sin(beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
+			var beta = -Math.Acos((x * x + y * y - Arm.FirstPartLength * Arm.FirstPartLength - Arm.SecondPartLength * Arm.SecondPartLength) / (2 * Arm.FirstPartLength * Arm.SecondPartLength));
+			var alpha = Math.Asin((Arm.SecondPartLength * Math.Sin(beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
 			return new Point(alpha, beta);
 		}
 
 		public Point CalculateReverseKinematicsSecondPosition(double x, double y)
 		{
-			var beta = Math.Acos((x * x + y * y - FirstArm.FirstPartLength * FirstArm.FirstPartLength - FirstArm.SecondPartLength * FirstArm.SecondPartLength) / (2 * FirstArm.FirstPartLength * FirstArm.SecondPartLength));
-			var alpha = -Math.Asin((FirstArm.SecondPartLength * Math.Sin(-beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
+			var beta = Math.Acos((x * x + y * y - Arm.FirstPartLength * Arm.FirstPartLength - Arm.SecondPartLength * Arm.SecondPartLength) / (2 * Arm.FirstPartLength * Arm.SecondPartLength));
+			var alpha = -Math.Asin((Arm.SecondPartLength * Math.Sin(-beta)) / Math.Sqrt(x * x + y * y)) + Math.Atan2(y, x);
 			return new Point(alpha, beta);
 		}
 

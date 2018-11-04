@@ -6,22 +6,24 @@ namespace ReverseKinematicsPathFinding.Model
 {
 	public class Arm:ViewModelBase
 	{
-		private Point _startPosition;
+		private Point _start;
 
-		private Point _jointPosition;
+		private Point _joint;
 
-		private Point _endPosition;
+		private Point _alternativeJoint;
+
+		private Point _end;
 
 		/// <summary>
 		/// Gets the arm's start position.
 		/// </summary>
-		public Point StartPosition
+		public Point Start
 		{
-			get { return _startPosition; }
+			get { return _start; }
 			private set
 			{
-				if (_startPosition == value) return;
-				_startPosition = value;
+				if (_start == value) return;
+				_start = value;
 				OnPropertyChanged();
 			}
 		}
@@ -29,13 +31,27 @@ namespace ReverseKinematicsPathFinding.Model
 		/// <summary>
 		/// Gets the arm's joint position.
 		/// </summary>
-		public Point JointPosition
+		public Point Joint
 		{
-			get { return _jointPosition; }
+			get { return _joint; }
 			private set
 			{
-				if (_jointPosition == value) return;
-				_jointPosition = value;
+				if (_joint == value) return;
+				_joint = value;
+				OnPropertyChanged();
+			}
+		}
+
+		/// <summary>
+		/// Gets the arm's joint position.
+		/// </summary>
+		public Point AlternativeJoint
+		{
+			get { return _alternativeJoint; }
+			private set
+			{
+				if (_alternativeJoint == value) return;
+				_alternativeJoint = value;
 				OnPropertyChanged();
 			}
 		}
@@ -43,13 +59,13 @@ namespace ReverseKinematicsPathFinding.Model
 		/// <summary>
 		/// Gets the arm's end position.
 		/// </summary>
-		public Point EndPosition
+		public Point End
 		{
-			get { return _endPosition; }
+			get { return _end; }
 			private set
 			{
-				if (_endPosition == value) return;
-				_endPosition = value;
+				if (_end == value) return;
+				_end = value;
 				OnPropertyChanged();
 			}
 		}
@@ -59,7 +75,7 @@ namespace ReverseKinematicsPathFinding.Model
 		/// </summary>
 		public double FirstPartLength
 		{
-			get { return (JointPosition - StartPosition).Length; }
+			get { return (Joint - Start).Length; }
 		}
 
 		/// <summary>
@@ -67,7 +83,7 @@ namespace ReverseKinematicsPathFinding.Model
 		/// </summary>
 		public double SecondPartLength
 		{
-			get { return (EndPosition - JointPosition).Length; }
+			get { return (End - Joint).Length; }
 		}
 
 		/// <summary>
@@ -86,11 +102,12 @@ namespace ReverseKinematicsPathFinding.Model
 			get { return (FirstPartLength + SecondPartLength) * 2; }
 		}
 
-		public Arm(Point startPosition)
+		public Arm(Point start)
 		{
-			_startPosition = startPosition;
-			JointPosition = startPosition;
-			EndPosition = startPosition;
+			_start = start;
+			Joint = start;
+			AlternativeJoint = start;
+			End = start;
 		}
 
 		/// <summary>
@@ -99,7 +116,16 @@ namespace ReverseKinematicsPathFinding.Model
 		/// <param name="position">New joint position.</param>
 		public void SetJointPosition(Point position)
 		{
-			JointPosition = position;
+			Joint = position;
+		}
+
+		/// <summary>
+		/// Sets the alternative joint position.
+		/// </summary>
+		/// <param name="position">New joint position.</param>
+		public void SetAlternativeJointPosition(Point position)
+		{
+			AlternativeJoint = position;
 		}
 
 		/// <summary>
@@ -108,7 +134,7 @@ namespace ReverseKinematicsPathFinding.Model
 		/// <param name="position">New end position.</param>
 		public void SetEndPosition(Point position)
 		{
-			EndPosition = position;
+			End = position;
 			NotifyArmsChanged();
 		}
 

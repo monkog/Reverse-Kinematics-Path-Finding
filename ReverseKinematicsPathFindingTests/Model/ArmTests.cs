@@ -20,9 +20,10 @@ namespace ReverseKinematicsPathFindingTests.Model
 		{
 			var unitUnderTest = new Arm(_startPosition);
 
-			Assert.Equal(_startPosition, unitUnderTest.StartPosition);
-			Assert.Equal(_startPosition, unitUnderTest.JointPosition);
-			Assert.Equal(_startPosition, unitUnderTest.EndPosition);
+			Assert.Equal(_startPosition, unitUnderTest.Start);
+			Assert.Equal(_startPosition, unitUnderTest.Joint);
+			Assert.Equal(_startPosition, unitUnderTest.AlternativeJoint);
+			Assert.Equal(_startPosition, unitUnderTest.End);
 		}
 
 		[Fact]
@@ -32,7 +33,7 @@ namespace ReverseKinematicsPathFindingTests.Model
 
 			_unitUnderTest.SetJointPosition(jointPosition);
 
-			Assert.Equal(jointPosition, _unitUnderTest.JointPosition);
+			Assert.Equal(jointPosition, _unitUnderTest.Joint);
 		}
 
 		[Fact]
@@ -42,7 +43,7 @@ namespace ReverseKinematicsPathFindingTests.Model
 
 			_unitUnderTest.SetEndPosition(endPosition);
 
-			Assert.Equal(endPosition, _unitUnderTest.EndPosition);
+			Assert.Equal(endPosition, _unitUnderTest.End);
 		}
 
 		[Fact]
