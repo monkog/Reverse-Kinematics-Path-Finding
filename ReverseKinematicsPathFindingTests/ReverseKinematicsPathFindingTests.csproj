@@ -56,6 +56,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\AdditionConverterTests.cs" />
     <Compile Include="Helpers\MoveToCenterConverterTests.cs" />
     <Compile Include="Model\ArmTests.cs" />
     <Compile Include="Model\ObstacleTests.cs" />

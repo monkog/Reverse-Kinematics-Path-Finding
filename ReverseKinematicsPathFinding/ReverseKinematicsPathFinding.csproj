@@ -59,13 +59,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helpers\AdditionConverter.cs" />
     <Compile Include="Helpers\BitmapToBitmapImageConverter.cs" />
     <Compile Include="Helpers\BoolToColorConverter.cs" />
     <Compile Include="Helpers\MoveToCenterConverter.cs" />
     <Compile Include="Model\Arm.cs" />
     <Compile Include="Model\Obstacle.cs" />
     <Compile Include="Model\Robot.cs" />
-    <Compile Include="Helpers\SizeObserver.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />

@@ -13,12 +13,11 @@ namespace ReverseKinematicsPathFindingTests.Helpers
 		}
 
 		[Theory]
-		[InlineData(10, 0, -5)]
-		[InlineData(10, 2, -3)]
-		[InlineData(11, 0, -5.5)]
-		public void MoveToCenter_WidthAndOffset_StartPosition(double width, double offset, double expected)
+		[InlineData(10, 100, 45)]
+		[InlineData(2, 11, 4.5)]
+		public void MoveToCenter_WidthAndOffset_StartPosition(double objectSize, double screenSize, double expected)
 		{
-			var result = _unitUnderTest.Convert(width, null, offset, null);
+			var result = _unitUnderTest.Convert(new object[] { objectSize, screenSize }, null, null, null);
 
 			Assert.Equal(expected, result);
 		}

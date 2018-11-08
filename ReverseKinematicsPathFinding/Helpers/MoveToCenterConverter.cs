@@ -4,18 +4,18 @@ using System.Windows.Data;
 
 namespace ReverseKinematicsPathFinding.Helpers
 {
-    public class MoveToCenterConverter : IValueConverter
+    public class MoveToCenterConverter : IMultiValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            double width = double.Parse(value.ToString());
-            double offset = double.Parse(parameter.ToString());
-            return offset - width / 2.0;
-        }
+	    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+		{
+			double objectSize = double.Parse(values[0].ToString());
+			double screenSize = double.Parse(values[1].ToString());
+			return (screenSize - objectSize) / 2.0;
+		}
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+	    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+	    {
+		    throw new NotImplementedException();
+	    }
     }
 }

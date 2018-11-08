@@ -6,13 +6,10 @@
         xmlns:viewModel="clr-namespace:ReverseKinematicsPathFinding.ViewModel"
         xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
         xmlns:helpers="clr-namespace:ReverseKinematicsPathFinding.Helpers"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Reverse Kinematics" Height="350" Width="525" WindowState="Maximized">
-    <Window.DataContext>
-        <viewModel:MainViewModel/>
-    </Window.DataContext>
-    
-    <Window.InputBindings>
+	<Window.InputBindings>
         <KeyBinding Command="{Binding DeleteCommand}" Key="Delete"/>
     </Window.InputBindings>
 
@@ -25,14 +22,15 @@
             <Setter Property="Orientation" Value="Horizontal"/>
             <Setter Property="Margin" Value="5"/>
         </Style>
-        <Style TargetType="Separator">
-            <Setter Property="Height" Value="4"/>
-            <Setter Property="Background" Value="SlateGray"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="Margin" Value="25, 10"/>
-        </Style>
-        
-        <helpers:BitmapToBitmapImageConverter x:Key="BitmapToBitmapImageConverter"/>
+		<Style TargetType="Separator">
+			<Setter Property="Height" Value="4"/>
+			<Setter Property="Background" Value="SlateGray"/>
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="Margin" Value="25, 10"/>
+		</Style>
+
+		<helpers:AdditionConverter x:Key="AdditionConverter"/>
+		<helpers:BitmapToBitmapImageConverter x:Key="BitmapToBitmapImageConverter"/>
 		<helpers:BoolToColorConverter x:Key="BoolToColorConverter"/>
         <helpers:MoveToCenterConverter x:Key="MoveToCenterConverter"/>
     </Window.Resources>
@@ -56,7 +54,7 @@
             <Image Width="360" Height="360" Source="{Binding ReachableSpaceImage, Converter={StaticResource ResourceKey=BitmapToBitmapImageConverter}}"/>
         </StackPanel>
 
-        <Canvas Grid.Column="1" Background="Black" Name="DemoCanvas">
+		<Canvas Grid.Column="1" Background="Black" Name="DemoCanvas" SizeChanged="AreaSizeChanged">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="MouseDown">
                     <i:InvokeCommandAction Command="{Binding MouseDownCommand}" CommandParameter="{Binding ElementName=DemoCanvas}"/>
@@ -68,13 +66,43 @@
                     <i:InvokeCommandAction Command="{Binding MouseUpCommand}" CommandParameter="{Binding ElementName=DemoCanvas}"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
-			<Ellipse Width="{Binding Robot.Arm.MaxRange}" Height="{Binding Robot.Arm.MaxRange}" Fill="DeepPink" Opacity="0.2"
-                     Canvas.Left="{Binding Robot.Arm.MaxRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=600}"
-                     Canvas.Top="{Binding Robot.Arm.MaxRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=418}"/>
-			<Ellipse Width="{Binding Robot.Arm.MinRange}" Height="{Binding Robot.Arm.MinRange}" Fill="Black"
-                     Canvas.Left="{Binding Robot.Arm.MinRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=600}"
-                     Canvas.Top="{Binding Robot.Arm.MinRange, Converter={StaticResource MoveToCenterConverter}, ConverterParameter=418}"/>
-            <ItemsControl ItemsSource="{Binding Obstacles}">
+			<Ellipse Width="{Binding Robot.Arm.MaxRange}" Height="{Binding Robot.Arm.MaxRange}" Fill="DeepPink" Opacity="0.2">
+				<Canvas.Left>
+					<MultiBinding Converter="{StaticResource MoveToCenterConverter}">
+						<MultiBinding.Bindings>
+							<Binding Path="Robot.Arm.MaxRange"/>
+							<Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Canvas}}" Path="ActualWidth"/>
+						</MultiBinding.Bindings>
+					</MultiBinding>
+				</Canvas.Left>
+				<Canvas.Top>
+					<MultiBinding Converter="{StaticResource MoveToCenterConverter}">
+						<MultiBinding.Bindings>
+							<Binding Path="Robot.Arm.MaxRange"/>
+							<Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Canvas}}" Path="ActualHeight"/>
+						</MultiBinding.Bindings>
+					</MultiBinding>
+				</Canvas.Top>
+			</Ellipse>
+			<Ellipse Width="{Binding Robot.Arm.MinRange}" Height="{Binding Robot.Arm.MinRange}" Fill="Black">
+				<Canvas.Left>
+					<MultiBinding Converter="{StaticResource MoveToCenterConverter}">
+						<MultiBinding.Bindings>
+							<Binding Path="Robot.Arm.MinRange"/>
+							<Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Canvas}}" Path="ActualWidth"/>
+						</MultiBinding.Bindings>
+					</MultiBinding>
+				</Canvas.Left>
+				<Canvas.Top>
+					<MultiBinding Converter="{StaticResource MoveToCenterConverter}">
+						<MultiBinding.Bindings>
+							<Binding Path="Robot.Arm.MinRange"/>
+							<Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Canvas}}" Path="ActualHeight"/>
+						</MultiBinding.Bindings>
+					</MultiBinding>
+				</Canvas.Top>
+			</Ellipse>
+			<ItemsControl ItemsSource="{Binding Obstacles}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas />
@@ -105,8 +133,32 @@
                   X2="{Binding Robot.AnimationArm.Joint.X}" Y2="{Binding Robot.AnimationArm.Joint.Y}" Stroke="Coral"/>
 			<Line X1="{Binding Robot.AnimationArm.Joint.X}" Y1="{Binding Robot.AnimationArm.Joint.Y}" 
                   X2="{Binding Robot.AnimationArm.End.X}" Y2="{Binding Robot.AnimationArm.End.Y}" Stroke="Coral"/>
-            <Ellipse Canvas.Left="{Binding Robot.Destination.X}" Canvas.Top="{Binding Robot.Destination.Y}"
-                     Width="10" Height="10" Fill="HotPink"/>
+			<Ellipse Width="10" Height="10" Fill="HotPink">
+				<Canvas.Left>
+					<MultiBinding Converter="{StaticResource AdditionConverter}">
+						<MultiBinding.Bindings>
+							<Binding Path="Robot.Destination.X"/>
+							<Binding>
+								<Binding.Source>
+									<system:Double>-5</system:Double>
+								</Binding.Source>
+							</Binding>
+						</MultiBinding.Bindings>
+					</MultiBinding>
+				</Canvas.Left>
+				<Canvas.Top>
+					<MultiBinding Converter="{StaticResource AdditionConverter}">
+						<MultiBinding.Bindings>
+							<Binding Path="Robot.Destination.Y"/>
+							<Binding>
+								<Binding.Source>
+									<system:Double>-5</system:Double>
+								</Binding.Source>
+							</Binding>
+						</MultiBinding.Bindings>
+					</MultiBinding>
+				</Canvas.Top>
+			</Ellipse>
         </Canvas>
     </Grid>
 </Window>

@@ -16,9 +16,6 @@ namespace ReverseKinematicsPathFinding.ViewModel
 	{
 		#region Private Members
 
-		private const double Width = 1200;
-		private const double Height = 837;
-
 		private ObservableCollection<Obstacle> _obstacles;
 
 		private ICommand _calculatePathCommand;
@@ -111,10 +108,10 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 		#region Constructors
 
-		public MainViewModel()
+		public MainViewModel(double areaWidth, double areaHeight)
 		{
 			Obstacles = new ObservableCollection<Obstacle>();
-			Robot = new Robot(Width, Height);
+			Robot = new Robot(areaWidth, areaHeight);
 
 			_timer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 50) };
 			_timer.Tick += TimerTick;
@@ -256,7 +253,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			var currentPosition = _configurations.ElementAt(timeDelta);
 			var p1 = Robot.CalculateFirstPosition(currentPosition.Item1 * Math.PI / 180.0);
 			var p2 = Robot.CalculateSecondPosition(p1, currentPosition.Item1 * Math.PI / 180.0, currentPosition.Item2 * Math.PI / 180.0);
-			
+
 			Robot.AnimationArm.SetArmPosition(p1);
 			Robot.AnimationArm.SetArmPosition(p2);
 		}
