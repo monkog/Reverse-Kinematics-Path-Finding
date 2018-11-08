@@ -19,7 +19,7 @@ namespace ReverseKinematicsPathFinding.Model
 		public Point Position
 		{
 			get { return _position; }
-			set
+			private set
 			{
 				if (_position == value) return;
 				_position = value;
@@ -33,7 +33,7 @@ namespace ReverseKinematicsPathFinding.Model
 		public Arm Arm
 		{
 			get { return _arm; }
-			set
+			private set
 			{
 				if (_arm == value) return;
 				_arm = value;
@@ -74,13 +74,19 @@ namespace ReverseKinematicsPathFinding.Model
 		public Robot(double width, double height)
 		{
 			_position = new Point(width / 2.0, height / 2.0);
-			Arm = new Arm(_position);
-			Destination = _position;
+			Reset();
 		}
 
 		#endregion Constructors
 
 		#region Public Methods
+
+		public void Reset()
+		{
+			Arm = new Arm(Position);
+			AnimationArm = new Arm(Position);
+			Destination = _position;
+		}
 
 		public bool IntersectsRectangle(Point p1, Point p2, Obstacle r)
 		{

@@ -60,6 +60,7 @@
     <Compile Include="Helpers\MoveToCenterConverterTests.cs" />
     <Compile Include="Model\ArmTests.cs" />
     <Compile Include="Model\ObstacleTests.cs" />
+    <Compile Include="Model\RobotTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\DelegateCommandTests.cs" />
   </ItemGroup>

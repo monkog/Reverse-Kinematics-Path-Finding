@@ -20,6 +20,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 		private ICommand _calculatePathCommand;
 		private ICommand _startAnimationCommand;
+		private ICommand _clearSceneCommand;
 
 		private ICommand _mouseDownCommand;
 		private ICommand _mouseMoveCommand;
@@ -96,6 +97,8 @@ namespace ReverseKinematicsPathFinding.ViewModel
 
 		public ICommand CalculatePathCommand { get { return _calculatePathCommand ?? (_calculatePathCommand = new DelegateCommand(CalculatePath)); } }
 
+		public ICommand ClearSceneCommand { get { return _clearSceneCommand ?? (_clearSceneCommand = new DelegateCommand(ClearScene)); } }
+
 		public ICommand MouseDownCommand { get { return _mouseDownCommand ?? (_mouseDownCommand = new DelegateCommand(MouseDown)); } }
 
 		public ICommand MouseMoveCommand { get { return _mouseMoveCommand ?? (_mouseMoveCommand = new DelegateCommand(MouseMove)); } }
@@ -121,6 +124,14 @@ namespace ReverseKinematicsPathFinding.ViewModel
 		#endregion Constructors
 
 		#region Private Methods
+
+		private void ClearScene(object obj)
+		{
+			Obstacles.Clear();
+			ConfigurationSpaceImage = new Bitmap(360, 360);
+			ReachableSpaceImage = new Bitmap(360, 360);
+			Robot.Reset();
+		}
 
 		private void ClearConfigurationData()
 		{
