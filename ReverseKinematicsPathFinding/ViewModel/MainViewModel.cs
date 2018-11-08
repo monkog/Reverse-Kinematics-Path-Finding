@@ -256,9 +256,9 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			var currentPosition = _configurations.ElementAt(timeDelta);
 			var p1 = Robot.CalculateFirstPosition(currentPosition.Item1 * Math.PI / 180.0);
 			var p2 = Robot.CalculateSecondPosition(p1, currentPosition.Item1 * Math.PI / 180.0, currentPosition.Item2 * Math.PI / 180.0);
-
-			Robot.AnimationArm.SetJointPosition(p1);
-			Robot.AnimationArm.SetEndPosition(p2);
+			
+			Robot.AnimationArm.SetArmPosition(p1);
+			Robot.AnimationArm.SetArmPosition(p2);
 		}
 
 		private void CalculateConfiguration()
@@ -294,28 +294,6 @@ namespace ReverseKinematicsPathFinding.ViewModel
 			OnPropertyChanged(nameof(ReachableSpaceImage));
 		}
 
-		private void FindSolution(Point destination, bool isFirstSolution)
-		{
-			Point angles;
-			if (isFirstSolution) angles = Robot.CalculateReverseKinematicsFirstPosition(destination.X, destination.Y);
-			else angles = Robot.CalculateReverseKinematicsSecondPosition(destination.X, destination.Y);
-
-			if (double.IsNaN(angles.X) || double.IsNaN(angles.Y)) return;
-
-			var p1 = Robot.CalculateFirstPosition(angles.X);
-			var p2 = Robot.CalculateSecondPosition(p1, angles.X, angles.Y);
-
-			if (isFirstSolution)
-			{
-				Robot.Arm.SetJointPosition(p1);
-				Robot.Arm.SetEndPosition(p2);
-			}
-			else
-			{
-				Robot.Arm.SetAlternativeJointPosition(p1);
-			}
-		}
-
 		private void SetRobotArms()
 		{
 			if (_currentObstacle != null) return;
@@ -325,26 +303,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 				return;
 			}
 
-			if (Robot.Arm.Joint == Robot.Arm.Start)
-			{
-				Robot.Arm.SetJointPosition(_mouseDownPosition);
-			}
-			else if (Robot.Arm.End == Robot.Arm.Start)
-			{
-				Robot.Arm.SetEndPosition(_mouseDownPosition);
-				Robot.Arm.SetEndPosition(_mouseDownPosition);
-				var delta = Robot.Arm.Joint - Robot.Arm.Start;
-				var angles = Robot.CalculateReverseKinematicsSecondPosition(delta.X, delta.Y);
-				var p1 = Robot.CalculateFirstPosition(angles.X);
-				var p2 = Robot.CalculateSecondPosition(p1, angles.X, angles.Y);
-				Robot.Arm.SetAlternativeJointPosition(p2);
-			}
-			else
-			{
-				var delta = _mouseDownPosition - new Point(Width / 2.0, Height / 2.0);
-				FindSolution(new Point(delta.X, delta.Y), isFirstSolution: true);
-				FindSolution(new Point(delta.X, delta.Y), isFirstSolution: false);
-			}
+			Robot.Arm.SetArmPosition(_mouseDownPosition);
 		}
 
 		private void MouseDown(object obj)
