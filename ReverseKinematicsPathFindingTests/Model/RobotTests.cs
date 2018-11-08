@@ -9,6 +9,15 @@ namespace ReverseKinematicsPathFindingTests.Model
 		private readonly Robot _unitUnderTest = new Robot(10, 10);
 
 		[Fact]
+		public void Constructor_ScreenDimensions_PositionSetToCenter()
+		{
+			var unitUnderTest = new Robot(2, 10);
+			
+			Assert.Equal(1, unitUnderTest.Position.X);
+			Assert.Equal(5, unitUnderTest.Position.Y);
+		}
+
+		[Fact]
 		public void Reset_Always_RobotReset()
 		{
 			var position = new Point(2, 10);

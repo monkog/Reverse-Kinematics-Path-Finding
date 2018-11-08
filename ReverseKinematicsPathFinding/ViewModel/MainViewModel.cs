@@ -128,8 +128,7 @@ namespace ReverseKinematicsPathFinding.ViewModel
 		private void ClearScene(object obj)
 		{
 			Obstacles.Clear();
-			ConfigurationSpaceImage = new Bitmap(360, 360);
-			ReachableSpaceImage = new Bitmap(360, 360);
+			ClearConfigurationData();
 			Robot.Reset();
 		}
 
