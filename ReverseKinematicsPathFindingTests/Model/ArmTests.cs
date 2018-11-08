@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using ReverseKinematicsPathFinding.Model;
 using Xunit;
 
@@ -6,6 +7,7 @@ namespace ReverseKinematicsPathFindingTests.Model
 {
 	public class ArmTests
 	{
+		private const double Epsilon = 0.00001;
 		private readonly Arm _unitUnderTest;
 		private readonly Point _startPosition;
 
@@ -56,6 +58,21 @@ namespace ReverseKinematicsPathFindingTests.Model
 			_unitUnderTest.SetArmPosition(endPosition);
 
 			Assert.NotEqual(_unitUnderTest.Start, _unitUnderTest.AlternativeJoint);
+		}
+
+		[Fact]
+		public void SetArmPosition_TwoPositions_JointsCalculated()
+		{
+			var jointPosition = new Point(10, 0);
+			var endPosition = new Point(15, 0);
+
+			_unitUnderTest.SetArmPosition(jointPosition);
+			_unitUnderTest.SetArmPosition(endPosition);
+
+			Assert.True(Math.Abs(_unitUnderTest.AlternativeJoint.X - 10) < Epsilon);
+			Assert.True(Math.Abs(_unitUnderTest.AlternativeJoint.Y) < Epsilon);
+			Assert.True(Math.Abs(_unitUnderTest.Joint.X - 15) < Epsilon);
+			Assert.True(Math.Abs(_unitUnderTest.Joint.Y - 5) < Epsilon);
 		}
 
 		[Fact]
